@@ -8,6 +8,9 @@ export class Client {
   @Column()
   name: string;
 
+    @Column() 
+  email: string;
+
   @OneToMany(() => Order, (order) => order.client)
   orders: Order[];
 }
