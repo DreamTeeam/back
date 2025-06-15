@@ -7,6 +7,13 @@ import { AuthModule } from './modules/auth/auth.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { EmployeesModule } from './modules/employees/employees.module';
 import { UsersModule } from './modules/users/users.module';
+import { SubCategoryModule } from './catalogues/subCategory/sub-category.module';
+import { CategoryModule } from './catalogues/category/category.module';
+import { BrandModule } from './catalogues/brand/brand.module';
+import { ProductModule } from './modules/products/product.module';
+import { ProductVariantModule } from './modules/productsVariant/product-variant.module';
+import { AuditModule } from './modules/auditModification/audit.module';
+import { SizeModule } from './modules/sizeProduct/size-product.module';
 
 @Module({
   imports: [
@@ -23,6 +30,13 @@ import { UsersModule } from './modules/users/users.module';
     RolesModule,
     EmployeesModule,
     UsersModule,
+    SubCategoryModule,
+    CategoryModule,
+    BrandModule,
+    ProductModule,
+    ProductVariantModule,
+    AuditModule,
+    SizeModule,
   ],
   controllers: [],
   providers: [],
