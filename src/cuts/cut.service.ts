@@ -1,14 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CutRepository } from './cut.repository';
 import { CreateCutDto } from './create-cutDto';
 import { extractEmployeeIdFromToken } from 'src/modules/temp-entities/helpers/extract-empoyee-id.helper';
+import { IsNull } from 'typeorm';
+
 @Injectable()
 export class CutService {
   constructor(private readonly cutRepo: CutRepository) {}
 
   async create(createCutDto: Partial<CreateCutDto>, token: string) {
-    const employeeId = extractEmployeeIdFromToken(token); 
-    const unassignedAudits = await this.cutRepo.getUnassignedAudits();
+   const employeeId = extractEmployeeIdFromToken(token); 
+   const unassignedAudits = await this.cutRepo.getUnassignedAudits();
 
     const auditCount = unassignedAudits.length;
     const saleCount = unassignedAudits.reduce((acc, audit) => acc + audit.saleCount, 0);
@@ -22,7 +24,7 @@ export class CutService {
     );
 
     const newCutData = {
-      ...createCutDto,
+      description: createCutDto.description,
       employeeId,
       auditCount,
       saleCount,
@@ -47,4 +49,15 @@ export class CutService {
   update(id: number, updateCutDto: Partial<CreateCutDto>) {
     return this.cutRepo.updateCut(id, updateCutDto);
   }
+
+  async remove(id: number) {
+  const cut = await this.cutRepo.findOne({ where: { id, deletedAt: IsNull() } });
+
+    if (!cut) {
+    throw new NotFoundException(`Cut con id ${id} no encontrado.`);
+  }
+  await this.cutRepo.softDelete(id);
+  return { message: `Cut con id ${id} eliminado correctamente.` };
+}
+
 }

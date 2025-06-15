@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param, Put, Headers } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Put, Headers, ParseIntPipe, Delete } from '@nestjs/common';
 import { CutService } from './cut.service';
 import { CreateCutDto } from './create-cutDto';
 import { UpdateCutDto } from './update-cutDto';
@@ -21,4 +21,10 @@ export class CutController {
   update(@Param('id') id: string, @Body() updateCutDto: UpdateCutDto) {
     return this.cutService.update(+id, updateCutDto);
   }
+
+  @Delete(':id')
+remove(@Param('id', ParseIntPipe) id: number) {
+  return this.cutService.remove(id);
+}
+
 }

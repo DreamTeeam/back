@@ -1,6 +1,8 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param } from '@nestjs/common';
 import { CheckoutService } from './checkout.service';
 import { Order } from 'src/modules/orders/entities/order.entity';
+import { Response } from 'express';
+import { Res } from '@nestjs/common';
 
 @Controller('checkout')
 export class CheckoutController {
@@ -35,4 +37,23 @@ export class CheckoutController {
 
     return this.checkoutService.sendConfirmationEmail(mockOrder);
   }
+
+  @Get('ticket/:id')
+async showTicket(@Param('id') id: string, @Res() res: Response) {
+  const buffer = await this.checkoutService.generateTicketPdf(id);
+
+  res.set({
+    'Content-Type': 'application/pdf',
+    'Content-Disposition': 'inline; filename=ticket.pdf',
+  });
+
+  res.end(buffer);
+}
+
+//LUEGO BORRAR
+@Get('create-fake-order')
+async createAndReturnId() {
+  return await this.checkoutService.createFakeOrder();
+}
+
 }

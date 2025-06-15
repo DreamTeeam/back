@@ -40,7 +40,7 @@ export class Audit {
   @Column({ name: 'id_empleado', type: 'int' })
   employeeId: number;
 
-  @Column({ name: 'id_corte', type: 'int' })
+  @Column({ name: 'id_corte', type: 'int' , nullable: true})
   cutId: number;
 
   @UpdateDateColumn({ type: 'timestamp', name: 'updated_at' })
