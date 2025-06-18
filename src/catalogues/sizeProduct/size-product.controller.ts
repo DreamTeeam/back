@@ -11,7 +11,7 @@ import {
 import { SizeService } from './size-product.service';
 import { CreateSizeDto } from './dto/create-size.dto';
 import { UpdateSizeDto } from './dto/update-size.dto';
-import { AutoAudit } from '../auditModification/decorator/audit-log.decorator';
+import { AutoAudit } from '../../modules/auditModification/decorator/audit-log.decorator';
 
 @Controller('sizes')
 export class SizeController {

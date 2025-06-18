@@ -13,7 +13,7 @@ import { BrandModule } from './catalogues/brand/brand.module';
 import { ProductModule } from './modules/products/product.module';
 import { ProductVariantModule } from './modules/productsVariant/product-variant.module';
 import { AuditModule } from './modules/auditModification/audit.module';
-import { SizeModule } from './modules/sizeProduct/size-product.module';
+import { SizeModule } from './catalogues/sizeProduct/size-product.module';
 import { MembershipStatusModule } from './catalogues/MembershipStatus/membership-status.module';
 import { Order } from './modules/orders/entities/order.entity';
 import { OrdersModule } from './modules/orders/orders.module';

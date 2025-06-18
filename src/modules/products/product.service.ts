@@ -10,7 +10,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { instanceToPlain } from 'class-transformer';
 import { ProductVariant } from '../productsVariant/entities/product-variant.entity';
-import { Size } from '../sizeProduct/entities/size-product.entity';
+import { Size } from '../../catalogues/sizeProduct/entities/size-product.entity';
 
 @Injectable()
 export class ProductService {

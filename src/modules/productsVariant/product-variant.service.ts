@@ -4,7 +4,7 @@ import { In, Repository } from 'typeorm';
 import { ProductVariant } from './entities/product-variant.entity';
 import { CreateProductVariantDto } from './dto/create-product-variant.dto';
 import { UpdateProductVariantDto } from './dto/update-product-variant.dto';
-import { Size } from '../sizeProduct/entities/size-product.entity';
+import { Size } from '../../catalogues/sizeProduct/entities/size-product.entity';
 import { Product } from '../products/entities/product.entity';
 import { instanceToPlain } from 'class-transformer';
 

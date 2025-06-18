@@ -1,6 +1,6 @@
 import { Exclude } from 'class-transformer';
 import { Product } from 'src/modules/products/entities/product.entity';
-import { Size } from 'src/modules/sizeProduct/entities/size-product.entity';
+import { Size } from 'src/catalogues/sizeProduct/entities/size-product.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
