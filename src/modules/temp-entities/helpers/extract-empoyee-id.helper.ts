@@ -1,20 +1,3 @@
-// import * as jwt from 'jsonwebtoken';
-
-// const JWT_SECRET = 'mi_clave_secreta';
-
-// export function extractEmployeeIdFromToken(authHeader: string): number {
-//   if (!authHeader) return 1;
-//   const token = authHeader.replace('Bearer ', '');
-//   try {
-//     const decoded = jwt.verify(token, JWT_SECRET) as { employeeId?: number };
-//     return decoded.employeeId ?? 1;
-//   } catch {
-//     return 1;
-//   }
-// }
-
-
-
  import { UnauthorizedException } from '@nestjs/common';
  import * as jwt from 'jsonwebtoken';
 

@@ -16,7 +16,7 @@ export class CutRepository {
 
   async getUnassignedAudits() {
     return this.auditRepo.find({
-      where: { cutId: IsNull() },
+      where: { cut_id: IsNull() },
     });
   }
 
@@ -25,10 +25,10 @@ export class CutRepository {
     return this.cutRepo.save(newCut);
   }
 
-  async assignAuditsToCut(auditIds: number[], cutId: number) {
+  async assignAuditsToCut(auditIds: number[], cut_id: number) {
     await Promise.all(
       auditIds.map((id) =>
-        this.auditRepo.update(id, { cutId }),
+        this.auditRepo.update(id, { cut_id }),
       ),
     );
   }

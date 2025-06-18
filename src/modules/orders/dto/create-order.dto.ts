@@ -11,10 +11,10 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-class ProductOrderDto {
+export class ProductOrderDto {
   @IsUUID()
   @IsNotEmpty()
-  productId: string;
+  variant_id: string;
 
   @IsInt()
   quantity: number;
@@ -23,15 +23,15 @@ class ProductOrderDto {
 export class CreateOrderDto {
   @IsOptional()
   @IsEmail()
-  email?: string;
+  email: string;
 
   @IsUUID()
   @IsNotEmpty()
-  employeeId: string;
+  employee_id: string;
 
   @IsString()
   @IsIn(['Efectivo', 'Tarjeta'])
-  typeOfPayment?: 'Efectivo' | 'Tarjeta';
+  payment_method: 'Efectivo' | 'Tarjeta';
 
   @IsArray()
   @ValidateNested({ each: true })

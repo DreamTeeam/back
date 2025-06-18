@@ -1,4 +1,4 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Audit } from './audit.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -39,7 +39,7 @@ export class AuditRepository {
   async findAll() {
   return this.auditRepo.find({
      where: {
-      deletedAt: IsNull(),
+      deleted_at: IsNull(),
      }
   });
 
@@ -60,7 +60,7 @@ async findOneById(id: number) {
   return this.auditRepo.findOne({
     where: {
       id,
-      deletedAt: IsNull(),
+      deleted_at: IsNull(),
     },
   });
 }

@@ -1,4 +1,3 @@
-import { Product } from 'src/modules/temp-entities/product.placeholder.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -9,6 +8,7 @@ import {
   DeleteDateColumn,
 } from 'typeorm';
 import { Order } from './order.entity';
+import { ProductVariant } from 'src/modules/productsVariant/entities/product-variant.entity';
 
 @Entity('tw_order_details')
 export class OrderDetail {
@@ -23,23 +23,23 @@ export class OrderDetail {
   price: number;
 
   @Column({ type: 'int' })
-  totalAmountOfProducts: number;
+  total_amount_of_products: number;
 
   @Column({
     type: 'decimal',
     precision: 10,
     scale: 2,
   })
-  subtotalOrder: number;
+  subtotal_order: number;
 
   @UpdateDateColumn({ type: 'timestamp', name: 'updated_at' })
-  updatedAt: Date;
+  updated_at: Date;
 
   @ManyToOne(() => Order, (order) => order.details, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'id_order' })//cambiar tw
+  @JoinColumn({ name: 'tw_order_relation' })
   order: Order;
 
-  @ManyToOne(() => Product)
-  @JoinColumn({ name: 'id_product' }) //acmbiar tw
-  product: Product;
+  @ManyToOne(() => ProductVariant)
+  @JoinColumn({ name: 'tw_product_variant_relation' })
+  variant: ProductVariant;
 }

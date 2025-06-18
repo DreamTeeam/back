@@ -8,10 +8,13 @@ import { Res } from '@nestjs/common';
 export class CheckoutController {
   constructor(private readonly checkoutService: CheckoutService) {}
 
-  @Post('send-confirmation')
-  sendEmail(@Body() order: Order) {
-    return this.checkoutService.sendConfirmationEmail(order);
- }
+@Post('send-confirmation/:id')
+async sendEmail(@Param('id') id: string) {
+  return this.checkoutService.sendConfirmationEmail(id);
+}
+
+
+
 
  @Post('send-test')
   sendTestEmail() {
@@ -50,10 +53,6 @@ async showTicket(@Param('id') id: string, @Res() res: Response) {
   res.end(buffer);
 }
 
-//LUEGO BORRAR
-@Get('create-fake-order')
-async createAndReturnId() {
-  return await this.checkoutService.createFakeOrder();
-}
+
 
 }

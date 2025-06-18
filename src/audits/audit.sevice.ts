@@ -14,9 +14,9 @@ export class AuditService {
      let totalTransferSales = 0;
 
      for (const order of unassignedOrders) {
-  if (order.typeOfPayment?.name === 'Efectivo') totalCashSales += +order.totalOrder;
-  else if (order.typeOfPayment?.name === 'Tarjeta') totalCardSales += +order.totalOrder;
-  else if (order.typeOfPayment?.name === 'Transferencia') totalTransferSales += +order.totalOrder;
+  if (order.type_of_payment?.name === 'Efectivo') totalCashSales += +order.total_order;
+  else if (order.type_of_payment?.name === 'Tarjeta') totalCardSales += +order.total_order;
+  else if (order.type_of_payment?.name === 'Transferencia') totalTransferSales += +order.total_order;
 }
 
 

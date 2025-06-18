@@ -13,20 +13,40 @@ export class Audit {
   @PrimaryGeneratedColumn({ name: 'id_arqueo' })
   id: number;
 
-  @Column({ name: 'total_ventas_efectivo', type: 'decimal', precision: 10, scale: 2 })
-  totalCashSales: number;
+  @Column({
+    name: 'total_c_efectivo',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+  })
+  total_cash_sales: number;
 
-  @Column({ name: 'total_ventas_tarjeta', type: 'decimal', precision: 10, scale: 2 })
-  totalCardSales: number;
+  @Column({
+    name: 'total_ventas_tarjeta',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+  })
+  total_card_sales: number;
 
-  @Column({ name: 'total_ventas_transferencia', type: 'decimal', precision: 10, scale: 2 })
-  totalTransferSales: number;
+  @Column({
+    name: 'total_ventas_transferencia',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+  })
+  total_transfer_sales: number;
 
   @Column({ name: 'n_cantidad_ventas', type: 'int' })
-  saleCount: number;
+  sale_count: number;
 
-  @Column({ name: 'n_total_efectivo', type: 'decimal', precision: 10, scale: 2 })
-  totalCash: number;
+  @Column({
+    name: 'n_total_efectivo',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+  })
+  total_cash: number;
 
   @Column({ name: 'd_fecha_arqueo', type: 'date' })
   date: string;
@@ -38,14 +58,14 @@ export class Audit {
   description: string;
 
   @Column({ name: 'id_empleado', type: 'int' })
-  employeeId: number;
+  employee_id: number;
 
-  @Column({ name: 'id_corte', type: 'int' , nullable: true})
-  cutId: number;
+  @Column({ name: 'id_corte', type: 'int' })
+  cut_id: number;
 
   @UpdateDateColumn({ type: 'timestamp', name: 'updated_at' })
-  updatedAt: Date;
+  updated_at: Date;
 
   @DeleteDateColumn({ name: 'deleted_at' })
-  deletedAt?: Date;
+  deleted_at?: Date;
 }

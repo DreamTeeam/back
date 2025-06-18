@@ -10,7 +10,7 @@ import {
 
 @Entity('tw_cortes')
 export class Cut {
-  @PrimaryGeneratedColumn({ name: 'id_corte' })
+  @PrimaryGeneratedColumn({ name: 'cut_id' })
   id: number;
 
   @Column({ name: 'd_fecha_corte', type: 'date' })
