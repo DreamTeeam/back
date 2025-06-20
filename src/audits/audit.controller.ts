@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Put, Param, Get } from '@nestjs/common';
+import { Controller, Post, Body, Put, Param, Get, ParseIntPipe, Delete } from '@nestjs/common';
 import { AuditService } from './audit.sevice';
 import { CreateAuditDto } from './create-auditDto';
 import { UpdateAuditDto } from './update-auditDto';
@@ -21,4 +21,9 @@ export class AuditController {
 findAll() {
   return this.auditService.findAll();
 }
+
+ @Delete(':id')
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.auditService.remove(id);
+  }
 }

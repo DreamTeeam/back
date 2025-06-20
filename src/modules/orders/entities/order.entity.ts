@@ -20,8 +20,11 @@ export class Order {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // @Column({ type: 'varchar' })
+
+  // @Column({ type: 'int', unique: true, generated: 'increment' })
   // folio: string;
+
+
 
   @Column({ type: 'int' })
   total_products: number;

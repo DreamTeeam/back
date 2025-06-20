@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { AuditRepository } from './audit.repository';
 import { UpdateAuditDto } from './update-auditDto';
 import { CreateAuditDto } from './create-auditDto';
@@ -26,6 +26,7 @@ export class AuditService {
        totalCardSales,
        totalTransferSales,
        saleCount: unassignedOrders.length,
+       totalCash: createAuditDto.totalCash ?? 0,
       date: new Date().toISOString().split('T')[0],
       time: new Date().toTimeString().split(' ')[0],
       cutId: undefined,
@@ -47,6 +48,15 @@ export class AuditService {
     return this.auditRepository.updateAudit(id, updateAuditDto);
   }
 
+async remove(id: number) {
+ const audit = await this.auditRepository.findOneById(id);
+
+  if (!audit) {
+    throw new NotFoundException(`Audit con id ${id} no encontrado.`);
+  }
+  await this.auditRepository.softDelete(id);
+  return { message: `Audit con id ${id} eliminado correctamente.` };
+}
 
 
 

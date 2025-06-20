@@ -37,7 +37,12 @@ export class AuditRepository {
    }
 
   async findAll() {
-  return this.auditRepo.find();
+  return this.auditRepo.find({
+     where: {
+      deleted_at: IsNull(),
+     }
+  });
+
 }
 
 async updateAudit(id: string, updateAuditDto: UpdateAuditDto) {
@@ -47,7 +52,18 @@ async updateAudit(id: string, updateAuditDto: UpdateAuditDto) {
 }
 
 
+async softDelete(id: number) {
+  return this.auditRepo.softDelete(id);
+}
 
+async findOneById(id: number) {
+  return this.auditRepo.findOne({
+    where: {
+      id,
+      deleted_at: IsNull(),
+    },
+  });
+}
 
 
 }
