@@ -8,10 +8,11 @@ import { SubCategory } from 'src/catalogues/subCategory/entities/sub-category.en
 import { Brand } from 'src/catalogues/brand/entities/brand.entity';
 import { Size } from '../sizeProduct/entities/size-product.entity';
 import { ProductVariant } from '../productsVariant/entities/product-variant.entity';
+import { ProductsCsvService } from './csv/products-cs.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Product, Category, SubCategory, Brand, Size, ProductVariant])],
-  providers: [ProductService],
+  providers: [ProductService, ProductsCsvService],
   controllers: [ProductController],
   exports: [ProductService]
 })

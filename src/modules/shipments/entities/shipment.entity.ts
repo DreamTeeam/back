@@ -7,7 +7,7 @@ import {
   DeleteDateColumn,
   OneToMany,
 } from 'typeorm';
-import { ShipmentVariant } from './shioment-variant.entity';
+import { ShipmentVariant } from './shipment-variant.entity';
 
 @Entity('tw_embarques')
 export class Shipment {

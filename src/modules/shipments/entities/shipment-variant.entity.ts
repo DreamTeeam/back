@@ -14,6 +14,9 @@ export class ShipmentVariant {
   @PrimaryGeneratedColumn({ name: 'id_embarques_variants' })
   id: number;
 
+  @Column({ name: 'variant_id', type: 'int' }) 
+  variantId: number;
+
   @Column({ name: 'n_cantidad_talles', type: 'int', default: 0 })
   totalSizes: number;
 

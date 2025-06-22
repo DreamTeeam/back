@@ -6,7 +6,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Shipment } from './shipment.entity';
-import { ShipmentVariant } from './shioment-variant.entity';
+import { ShipmentVariant } from './shipment-variant.entity';
 
 @Entity('tw_embarques_sizes')
 export class ShipmentSize {
@@ -15,6 +15,10 @@ export class ShipmentSize {
 
   @Column({ name: 'n_cantidad_stock', type: 'float' })
   stock: number;
+
+  @Column({ name: 'id_size', type: 'int' })
+  sizeId: number;
+
 
   @ManyToOne(() => ShipmentVariant, (variant: ShipmentVariant) => variant.sizes)
   @JoinColumn({ name: 'id_embarque_variant' })
