@@ -6,6 +6,8 @@ import typeormConfig, { masterDbConfig } from './config/typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
 //FIXME Importa la plantilla del tenant también(rEVISAR NOMBRES DE IMPORTACIÓN EN CASO DE SER NECESARIO)
 import typeormConfigAlias, { tenantDbConfigTemplate } from './config/typeorm'; 
+import { JwtModule } from '@nestjs/jwt'; //! Necesario si TenantMiddleware decodifica JWT
+
 
 import { TodosModule } from './modules/todos/todos.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -27,12 +29,14 @@ import { MembershipTypesModule } from './modules/subscriptions/membershipTypes/m
 import { MembershipsModule } from './modules/subscriptions/membership/memberships.module';
 import { CutModule } from './cuts/cut.module';
 import { ShipmentsModule } from './modules/shipments/shipments.module';
+
 //! Master module
 import { MasterDataModule } from './master_data/master_data.module';
 //! TenantConnectionModule
 import { TenantConnectionModule } from './common/tenant-connection/tenant-connection.module';
 //! TenantMiddleware; funciona junto con el AuthModule
 import { TenantMiddleware } from './common/middleware/tenant.middleware';
+import { User } from './modules/users/entities/user.entity';
 
 
 @Module({
@@ -57,6 +61,18 @@ import { TenantMiddleware } from './common/middleware/tenant.middleware';
     TypeOrmModule.forRoot(masterDbConfig),
     //! Importa el TenantConnectionModule
     TenantConnectionModule,
+
+    //FIXME Configuración global de JWT (si es necesaria fuera de AuthModule, por ejemplo, en TenantMiddleware)
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: { expiresIn: configService.get<string>('JWT_EXPIRES_IN') },
+      }),
+      global: true, //! Lo hace disponible globalmente
+    }),
+    //Entidades
     AuthModule, //BUG AutjModulke tiene que estar listado antes que  el TenantMiddleware en configure() en caso de usar JWT para identificar el tenant
     TodosModule,
     RolesModule,
@@ -77,6 +93,7 @@ import { TenantMiddleware } from './common/middleware/tenant.middleware';
     MembershipsModule,
     CutModule,
     ShipmentsModule,
+    User,
     //! MasterDataModule (usa la conexión 'masterConnection')
     MasterDataModule,
   ],
@@ -85,10 +102,16 @@ import { TenantMiddleware } from './common/middleware/tenant.middleware';
 })
   
 export class AppModule {
-  //[x] Configurar el middleware para que se ejecute en todas las rutas
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(TenantMiddleware)
-      .forRoutes({ path: '*', method: RequestMethod.ALL }); //! Aplica a todas las rutas
+      //FIXME Excluye las rutas que no necesitan un tenant (ej. login, registro de zapaterías)
+      .exclude(
+        { path: 'customers', method: RequestMethod.POST }, //! Para registrar una nueva zapatería
+        { path: 'auth/login', method: RequestMethod.POST }, //!  ruta de login principal
+        { path: 'customers/:id/test-connection', method: RequestMethod.GET }, //! ruta de prueba temporal
+        //FIXME aquí se cualquier otra ruta que sea global y no requiera un tenant
+      )
+      .forRoutes({ path: '*', method: RequestMethod.ALL }); //! Aplica el middleware a todas las demás rutas
   }
 }

@@ -50,6 +50,7 @@ import { CompanyMembership } from 'src/modules/subscriptions/membershipTypes/ent
 
 
 
+
 @Injectable()
 export class TenantConnectionService implements OnModuleDestroy {
   private readonly logger = new Logger(TenantConnectionService.name);

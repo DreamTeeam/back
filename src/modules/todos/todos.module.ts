@@ -8,10 +8,14 @@ import { TodosService } from './todos.service';
 import { TodosController } from './todos.controller';
 import { Todo } from './entities/todo.entity';
 
+//! IMPORTA EL MÓDULO DE REPOSITORIOS DE TENANT
+import { TenantTypeOrmModule } from '../../common/typeorm-tenant-repository/tenant-repository.provider';
+
+
 @Module({
-  //! AUNQUE YA NO OCUPAREMOS TypeOrmModule.forFeature DEBIDO A QUE EL REPOSITORIO SE OBTENDRA DINAMICAMENTE
-  // imports: [TypeOrmModule.forFeature([Todo])], //! COMENTAR, NO ELIMINAR HASTA HACEGURARSE QUE TODOS LOS ENDPOINTS FUNCIONAN
-  imports: [],
+  //! Deberán remplazar TypeOrmModule.forFeature con TenantTypeOrmModule.forFeature
+  //! asegurense de listar todas las entidades gestionadas por este módulo
+  imports: [TenantTypeOrmModule.forFeature([Todo])],
   controllers: [TodosController],
   providers: [TodosService],
 })
