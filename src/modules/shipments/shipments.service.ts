@@ -1,14 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Shipment } from './entities/shipment.entity';
 import { CreateShipmentDto } from './dtos/create-shipment.dto';
 import { UpdateShipmentDto } from './dtos/update-shipment.dto';
+import { InjectTenantRepository } from 'src/common/typeorm-tenant-repository/tenant-repository.decorator'; 
 
 @Injectable()
 export class ShipmentsService {
   constructor(
-    @InjectRepository(Shipment)
+    @InjectTenantRepository(Shipment)
     private shipmentRepo: Repository<Shipment>,
   ) {}
 
@@ -56,3 +56,6 @@ export class ShipmentsService {
     return this.shipmentRepo.softRemove(shipment);
   }
 }
+
+
+

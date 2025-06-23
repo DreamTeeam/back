@@ -25,6 +25,10 @@ import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConne
 import { Brand } from '../../catalogues/brand/entities/brand.entity';
 
 //? Entidades Pia
+import { Shipment } from 'src/modules/shipments/entities/shipment.entity';
+import { ShipmentSize } from 'src/modules/shipments/entities/shipment-size.entity';
+import { ShipmentVariant } from 'src/modules/shipments/entities/shipment-variant.entity';
+
 
 //? Entidades Ebgueny
 import { User } from '../../modules/users/entities/user.entity';
@@ -138,7 +142,9 @@ export class TenantConnectionService implements OnModuleDestroy {
         //? Entidades Steven
 
         //? Entidades Pia
-
+        Shipment,
+        ShipmentSize,
+        ShipmentVariant,
         //? Entidades Ebgueny
       ],
       synchronize:
