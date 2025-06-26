@@ -48,6 +48,24 @@ import { ChatGateway } from './modules/websocket-chat/chat.gateway';
       useFactory: (config: ConfigService) => config.get('typeorm')!,
     }),
     TypeOrmModule.forRoot(masterDbConfig),
+
+    //TODO DESCOMENTAR PARA SINCRONIZAR TENANTS POR PRIMERA VEZ (DROPSCHEMA Y SYNCHRONIZE DEBEN SER TRUE)
+    //FIXME ADEMAS EN LAS ENTIDADES DE MASTER DB DEBEN ESTAR LAS DE MASTER_MODULES(SUSTITUYE A MASTER_DATA)
+    // 2. Conexión explícita al Tenant A (PARA CREAR ESQUEMA)
+    // TypeOrmModule.forRoot({
+    //   ...tenantDbConfigTemplate, // Usar plantilla de tenant
+    //   name: 'tenant_a_connection', // nombre único es CRÍTICO!
+    //   database: 'pos_tenant_a_db', // Sobrescribir el nombre de la DB
+    //   // 'synchronize' ya viene de la plantilla. Se activará si ENABLE_TENANT_SYNC es 'true'
+    // }),
+
+    // // 3. Conexión explícita al Tenant B (PARA CREAR ESQUEMA)
+    // TypeOrmModule.forRoot({
+    //   ...tenantDbConfigTemplate, // Usar la misma plantilla
+    //   name: 'tenant_b_connection', // nombre único!
+    //   database: 'pos_tenant_b_db', // Sobrescribe con el otro nombre de DB
+    // }),
+
     TenantConnectionModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

@@ -29,9 +29,12 @@ export const tenantDbConfigTemplate: PostgresConnectionOptions = {
 };
 
 //HACK --- Configuración para la Base de Datos MAESTRA ---
-import { Customer } from '../master_data/customer/entities/customer.entity';
-import { CompanySubscription } from '../master_data/company_subscription/entities/company-subscription.entity';
-import { GlobalMembershipType } from '../master_data/global_membership_type/entities/global-membership-type.entity';
+// import { Customer } from '../master_data/customer/entities/customer.entity';
+// import { CompanySubscription } from '../master_data/company_subscription/entities/company-subscription.entity';
+// import { GlobalMembershipType } from '../master_data/global_membership_type/entities/global-membership-type.entity';
+import { Tenant } from '../master_modules/tenants/entities/tenant.entity';
+import { UserTenant } from '../master_modules/user-tenants/entities/user-tenant.entity';
+import { User } from '../master_modules/users/entities/user.entity';
 
 export const masterDbConfig: TypeOrmModuleOptions = {
   type: 'postgres',
@@ -40,7 +43,8 @@ export const masterDbConfig: TypeOrmModuleOptions = {
   username: process.env.MASTER_DB_USERNAME || 'postgres',
   password: process.env.MASTER_DB_PASSWORD || '',
   database: process.env.MASTER_DB_DATABASE || '',
-  entities: [Customer, CompanySubscription, GlobalMembershipType], //! Solo las entidades de la DB Maestra
+  // entities: [Customer, CompanySubscription, GlobalMembershipType], //! Solo las entidades de la DB Maestra
+  entities: [Tenant, UserTenant, User], //! Solo las entidades de la DB Maestra
   dropSchema: false,
   synchronize: true,
   name: 'masterConnection',
