@@ -77,7 +77,6 @@ export class SubCategoryService {
       ...createDto,
       slug, // NACHO
       categories: existingCategories,
-      slug, // NACHO
     });
     const saved = await this.subCategoryRepository.save(subCategory);
     return instanceToPlain(saved);
