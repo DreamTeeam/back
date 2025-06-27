@@ -32,8 +32,7 @@ export class SubCategory {
   })
   image: string;
 
-  
-  //NACHO
+    //NACHO
   @Column('varchar', {
     length: 120,
     unique: true,

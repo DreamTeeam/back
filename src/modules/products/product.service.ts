@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ILike, In, IsNull, Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -19,7 +19,8 @@ import { Brand } from 'src/catalogues/brand/entities/brand.entity';
 import { Employee } from 'src/modules/users/entities/employee.entity';
 import { Size } from 'src/catalogues/sizeProduct/entities/size-product.entity';
 import { InjectTenantRepository } from 'src/common/typeorm-tenant-repository/tenant-repository.decorator';
-import { slugify } from '../../utils/slugify'; //NACHO
+import { slugify } from '../../utils/slugify'; //NACHOimport { slugify } from '../../utils/slugify'; //NACHO
+
 @Injectable()
 export class ProductService {
   constructor(
@@ -31,6 +32,7 @@ export class ProductService {
     private readonly colorRepository: Repository<Color>,
     @InjectTenantRepository(SubCategory)
     private readonly subCategoryRepository: Repository<SubCategory>, // NACHO
+    @InjectTenantRepository(SubCategory)
     private readonly variantService: ProductVariantService,
     private readonly dataSource: DataSource,
   ) {}
@@ -147,12 +149,7 @@ export class ProductService {
 
       const productWithVariants = await this.productRepository.findOne({
         where: { id: savedProduct.id },
-        relations: [
-          'variants',
-          'variants.color',
-          'variants.variantSizes',
-          'variants.variantSizes.size',
-        ],
+        relations: ['variants', 'variants.color', 'variants.variantSizes.size'],
       });
 
       return instanceToPlain(productWithVariants);
@@ -180,8 +177,8 @@ export class ProductService {
         'category',
         'subCategory',
         'brand',
-        'variants',
-        'variants.variantSizes',
+        'variants.color',
+        'variants.variantSizes.size',
       ],
     });
     return instanceToPlain(products);
@@ -194,8 +191,8 @@ export class ProductService {
         'category',
         'subCategory',
         'brand',
-        'variants',
-        'variants.variantSizes',
+        'variants.color',
+        'variants.variantSizes.size',
       ],
     });
     if (!product) {
@@ -238,7 +235,7 @@ export class ProductService {
 
   async update(
     id: string,
-    updateDto: UpdateProductDto,
+    productData: UpdateProductDto,
   ): Promise<{ message: string; updatedProduct: Product }> {
     const product = await this.productRepository.findOneBy({ id });
 
@@ -246,9 +243,21 @@ export class ProductService {
       throw new NotFoundException(`Product with id ${id} not found`);
     }
 
+    const existing = await this.productRepository.findOne({
+      where: [{ code: productData.code }, { name: productData.name }],
+    });
+
+    if (existing) {
+      throw new BadRequestException(
+        `Product already exists with ${
+          existing.code === productData.code ? 'code' : 'name'
+        }: ${existing.code === productData.code ? productData.code : productData.name}`,
+      );
+    }
+
     const updatedProduct = await this.productRepository.save({
       ...product,
-      ...updateDto,
+      ...productData,
     });
 
     return {
@@ -300,7 +309,7 @@ export class ProductService {
     const belongsToCategory = subCategory.categories.some(
       (cat) => cat.slug === categorySlug,
     );
-    
+
     if (!belongsToCategory) {
       throw new BadRequestException(
         'Esa subcategoría no pertenece a la categoría indicada',

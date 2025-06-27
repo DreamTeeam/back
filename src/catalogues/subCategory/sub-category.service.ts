@@ -13,6 +13,7 @@ import { instanceToPlain } from 'class-transformer';
 import { TenantConnectionService } from 'src/common/tenant-connection/tenant-connection.service';
 import { InjectTenantRepository } from 'src/common/typeorm-tenant-repository/tenant-repository.decorator';
 import { slugify } from '../../utils/slugify'; //NACHO
+
 @Injectable()
 export class SubCategoryService {
   constructor(
@@ -71,11 +72,12 @@ export class SubCategoryService {
     if (slugExists) {
       slug = `${slug}-${Date.now()}`;
     }
-    
+
     const subCategory = this.subCategoryRepository.create({
       ...createDto,
       slug, // NACHO
       categories: existingCategories,
+      slug, // NACHO
     });
     const saved = await this.subCategoryRepository.save(subCategory);
     return instanceToPlain(saved);
@@ -126,7 +128,7 @@ export class SubCategoryService {
     return { message: `SubCategory with id ${id} deleted successfully` };
   }
 
-  // NACHO
+    // NACHO
   async findBySlug(slug: string): Promise<SubCategory> {
     const subCategory = await this.subCategoryRepository.findOne({
       where: { slug },

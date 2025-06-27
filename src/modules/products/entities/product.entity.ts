@@ -50,7 +50,7 @@ export class Product {
   @Column({ type: 'uuid' })
   brand_id: string;
 
-  // NACHO
+    // NACHO
   @Column('varchar', { length: 200, unique: true })
   slug: string;
 

@@ -1,0 +1,71 @@
+<h1>Hola {{name}},</h1>
+<p>Estos productos tienen stock bajo:</p>
+<ul>
+  {{#each products}}
+    <li>{{name}}: {{stock}} unidades</li>
+  {{/each}}
+</ul>
+<p>Por favor, considera reabastecerlos para evitar problemas de disponibilidad.</p>
+<p>Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.</p>
+
+
+
+
+
+
+---  ---
+
+
+--- membership-expired.hbs ---
+<h1>Hola {{name}}</h1>
+<p>Tu membresía ha expirado. Renueva para seguir disfrutando del servicio.</p>
+
+--- order-processed.hbs ---
+<h1>Hola {{name}}</h1>
+<p>Tu orden #{{orderId}} ha sido procesada con éxito.</p>
+
+--- invoice-created.hbs ---
+<h1>Hola {{name}}</h1>
+<p>Tu factura correspondiente al pedido #{{orderId}} ha sido emitida.</p>
+
+--- payment-success.hbs ---
+<h1>Hola {{name}}</h1>
+<p>Tu pago por ${{amount}} fue recibido con éxito. ¡Gracias!</p>
+
+--- stock-low.hbs ---
+<h1>Hola {{name}}</h1>
+<p>Los siguientes productos tienen stock bajo:</p>
+<ul>
+  {{#each products}}
+    <li>{{name}}: {{stock}} unidades</li>
+  {{/each}}
+</ul>
+
+--- stock-out.hbs ---
+<h1>Hola {{name}}</h1>
+<p>Los siguientes productos se han quedado sin stock:</p>
+<ul>
+  {{#each products}}
+    <li>{{name}}</li>
+  {{/each}}
+</ul>
+
+--- new-product.hbs ---
+<h1>Hola {{name}}</h1>
+<p>Se ha añadido un nuevo producto: <strong>{{productName}}</strong>.</p>
+
+--- price-updated.hbs ---
+<h1>Hola {{name}}</h1>
+<p>El precio del producto <strong>{{productName}}</strong> ha sido actualizado.</p>
+
+--- new-employee.hbs ---
+<h1>Hola {{name}}</h1>
+<p>Se ha registrado un nuevo empleado: {{employeeName}}.</p>
+
+--- user-deactivated.hbs ---
+<h1>Hola {{name}}</h1>
+<p>Tu cuenta ha sido desactivada. Si tienes dudas, contáctanos.</p>
+
+--- weekly-summary.hbs ---
+<h1>Hola {{name}}</h1>
+<p>Resumen semanal: vendiste un total de <strong>${{total}}</strong> esta semana. ¡Buen trabajo!</p>

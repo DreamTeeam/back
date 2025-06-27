@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -13,10 +14,14 @@ import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { AutoAudit } from '../auditModification/decorator/audit-log.decorator';
+import { ProductSearchService } from './searchProducts.service';
 
 @Controller('products')
 export class ProductController {
-  constructor(private readonly productService: ProductService) {}
+  constructor(
+    private readonly productService: ProductService,
+    private readonly productSearchService: ProductSearchService,
+  ) {}
 
   @AutoAudit()
   @Post()
@@ -25,8 +30,11 @@ export class ProductController {
   }
 
   @Get('search')
-  async searchProducts(@Query('query') query: string, @Query('color') color: string) {
-    return this.productService.searchProducts(query, color);
+  async searchProducts(@Query('query') query: string, @Query('color') color?: string) {
+    if (!query || query.trim() === '') {
+      throw new BadRequestException('El parámetro "query" es obligatorio para la búsqueda.');
+    }
+    return this.productSearchService.searchProducts(query, color);
   }
 
   @Get()
@@ -52,9 +60,7 @@ export class ProductController {
     return this.productService.delete(id);
   }
 
-
-
-// NACHO
+  // NACHO
   @Get('category/:categorySlug/subcategory/:subCategorySlug')
   getByCategoryAndSubcategory(
   @Param('categorySlug') categorySlug: string,

@@ -35,7 +35,8 @@ import { User } from './modules/users/entities/user.entity';
 import { CancellationModule } from './modules/cancellation/cancellation.module';
 import { ShipmentsModule } from './modules/shipments/shipments.module';
 import { ChatModule } from './modules/websocket-chat/chat.module';
-import { ChatGateway } from './modules/websocket-chat/chat.gateway';
+import { ChatGateway } from './modules/websocket-chat/chat.gateway';import { NotificationsModule } from './modules/notifications/notifications.module';
+
 
 @Module({
   imports: [
@@ -81,6 +82,7 @@ import { ChatGateway } from './modules/websocket-chat/chat.gateway';
     Size,
     VariantSizesModule,
     ColorModule,
+    NotificationsModule,
     CancellationReasonModule,
     CancellationModule,
     ShipmentsModule,

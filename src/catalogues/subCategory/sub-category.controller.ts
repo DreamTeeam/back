@@ -46,7 +46,6 @@ export class SubCategoryController {
     return this.subCategoryService.delete(id);
   }
 
-
   @Get('slug/:slug') // NACHO
   findBySlug(@Param('slug') slug: string) {
     return this.subCategoryService.findBySlug(slug);

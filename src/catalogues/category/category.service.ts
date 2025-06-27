@@ -21,10 +21,8 @@ export class CategoryService {
   ) {}
 
   async create(createDto: CreateCategoryDto): Promise<any> {
-    const { name } = createDto;
-    const key = slugify(name); //NACHO
-    const slug = slugify(name); //NACHO
-
+    const { name, key } = createDto;
+     const slug = slugify(name); //NACHO
 
     const existing = await this.categoryRepository.findOne({
       where: [{ name }, { key }],
@@ -39,8 +37,7 @@ export class CategoryService {
     }
     const category = this.categoryRepository.create({
       ...createDto,
-      key, // NACHO
-      slug, // NACHO
+       slug, // NACHO
     });
     const saved = await this.categoryRepository.save(category);
     return instanceToPlain(saved);
