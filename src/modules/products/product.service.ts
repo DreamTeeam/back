@@ -204,34 +204,36 @@ export class ProductService {
     return instanceToPlain(product);
   }
 
-  async searchProducts(query: string, color: string): Promise<any> {
+  async searchProducts(query: string, color?: string): Promise<any> {
     if (!query || query.trim() === '') {
-      throw new BadRequestException('There are no results for your search');
+      return [];
     }
 
-    const products = await this.productRepository
+    const searchTerm = `%${query.toLowerCase()}%`;
+
+    const queryBuilder = await this.productRepository
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
       .leftJoinAndSelect('product.subCategory', 'subCategory')
       .leftJoinAndSelect('product.brand', 'brand')
       .leftJoinAndSelect('product.variants', 'variants')
-      .leftJoinAndSelect('variants.color', 'color')
+      .leftJoinAndSelect('variants.color', 'variantColor')
       .leftJoinAndSelect('variants.variantSizes', 'variantSizes')
       .leftJoinAndSelect('variantSizes.size', 'size')
-      .where('brand.name ILIKE :query', { query: `%${query}%` })
-      // .orWhere('product.description ILIKE :query', { query: `%${query}%` })
-      // .orWhere('product.code ILIKE :query', { query: `%${query}%` })
-      // .orWhere('category.name ILIKE :query', { query: `%${query}%` })
-      // .orWhere('subCategory.name ILIKE :query', { query: `%${query}%` })
-      // .orWhere('brand.name ILIKE :brand', { brand: `%${query}%` })
-      // .orWhere('variants.description ILIKE :query', { query: `%${query}%` })
-      // .andWhere('color.color ILIKE :color', { color: `%${color}%` })  // NACHO
-      // .orWhere('size.size_us::text ILIKE :query', { query: `%${query}%` })
-      // .orWhere('size.size_eur::text ILIKE :query', { query: `%${query}%` })
-      // .orWhere('size.size_cm::text ILIKE :query', { query: `%${query}%` })
-      // .orWhere('product.sale_price::text ILIKE :query', { query: `%${query}%` })
-      .take(50)
-      .getMany();
+
+      .where('LOWER(product.name) LIKE :searchTerm', { searchTerm })
+      .orWhere('LOWER(product.description) LIKE :searchTerm', { searchTerm })
+      .orWhere('LOWER(brand.name) LIKE :searchTerm', { searchTerm })
+      .orWhere('LOWER(category.name) LIKE :searchTerm', { searchTerm })
+      .orWhere('LOWER(subCategory.name) LIKE :searchTerm', { searchTerm });
+
+    if (color && color.trim() !== '') {
+      const colorTerm = `%${color.toLowerCase()}%`;
+      queryBuilder.andWhere('variantColor.color ILIKE :color', {
+        color: `%${color}%`,
+      });
+    }
+    const products = await queryBuilder.take(50).getMany();
 
     return instanceToPlain(products);
   }
@@ -300,7 +302,7 @@ export class ProductService {
     const belongsToCategory = subCategory.categories.some(
       (cat) => cat.slug === categorySlug,
     );
-    
+
     if (!belongsToCategory) {
       throw new BadRequestException(
         'Esa subcategoría no pertenece a la categoría indicada',
