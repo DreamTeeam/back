@@ -22,7 +22,7 @@ export const tenantDbConfigTemplate: PostgresConnectionOptions = {
   entities: [join(__dirname, '/../**/*.entity.{js,ts}')],
   migrations: ['dist/migrations/*{.ts,.js}'],
   // autoLoadEntities: true,
-  dropSchema: false,
+  dropSchema: true,
   synchronize:
     process.env.NODE_ENV !== 'production' &&
     process.env.ENABLE_TENANT_SYNC === 'true',

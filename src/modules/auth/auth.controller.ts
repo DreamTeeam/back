@@ -38,6 +38,7 @@ export class AuthController {
       sameSite: 'lax',
       expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 días
     });
+    
     return { message: 'Login successful' };
   }
 
