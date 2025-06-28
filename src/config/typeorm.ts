@@ -22,7 +22,7 @@ export const tenantDbConfigTemplate: PostgresConnectionOptions = {
   entities: [join(__dirname, '/../**/*.entity.{js,ts}')],
   migrations: ['dist/migrations/*{.ts,.js}'],
   // autoLoadEntities: true,
-  dropSchema: false,
+  dropSchema: true,
   synchronize:
     process.env.NODE_ENV !== 'production' &&
     process.env.ENABLE_TENANT_SYNC === 'true',
@@ -41,7 +41,7 @@ export const masterDbConfig: TypeOrmModuleOptions = {
   password: process.env.MASTER_DB_PASSWORD || '',
   database: process.env.MASTER_DB_DATABASE || '',
   entities: [Customer, CompanySubscription, GlobalMembershipType], //! Solo las entidades de la DB Maestra
-  dropSchema: false,
+  dropSchema: true,
   synchronize: true,
   name: 'masterConnection',
 };
