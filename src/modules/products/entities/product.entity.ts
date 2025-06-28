@@ -69,9 +69,9 @@ export class Product {
   @OneToMany(() => ProductVariant, (variant) => variant.product)
   variants: ProductVariant[];
 
-  @ManyToOne(() => User)
-  @JoinColumn({ name: 'employee_id' })
-  employee: User;
+  // @ManyToOne(() => User)
+  // @JoinColumn({ name: 'employee_id' })
+  // employee: User;
 
   @Exclude()
   @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
