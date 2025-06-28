@@ -29,7 +29,6 @@ export class ProductController {
     
     private readonly productService: ProductService,
     private readonly productSearchService: ProductSearchService,
-  ,
     private readonly csvService: ProductsCsvService,
   ) {}
 
