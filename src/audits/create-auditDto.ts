@@ -1,12 +1,13 @@
+import { IsUUID, IsNotEmpty, IsString } from 'class-validator';
+
 export class CreateAuditDto {
-  totalCashSales: number;
-  totalCardSales: number;
-  totalTransferSales: number;
-  saleCount: number;
-  totalCash: number;
-  date: string;
-  time: string;
+  @IsNotEmpty()
   description: string;
-  employeeId: number;
-  cutId: number;
+
+  @IsNotEmpty()
+  totalCash: number;
+
+  @IsUUID()
+  @IsNotEmpty()
+  employeeId: string;
 }

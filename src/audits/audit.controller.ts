@@ -1,24 +1,49 @@
-import { Controller, Post, Body, Put, Param, Get } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Param,
+  Body,
+  ParseIntPipe,
+  Delete,
+  Req,
+} from '@nestjs/common';
 import { AuditService } from './audit.sevice';
 import { CreateAuditDto } from './create-auditDto';
 import { UpdateAuditDto } from './update-auditDto';
+import { Request } from 'express';
 
 @Controller('audits')
 export class AuditController {
   constructor(private readonly auditService: AuditService) {}
 
+  @Get()
+  getAll() {
+    return this.auditService.findAll();
+  }
+
   @Post()
-  create(@Body() createAuditDto: CreateAuditDto) {
-    return this.auditService.create(createAuditDto);
+  create(@Body() dto: CreateAuditDto, @Req() req: Request) {
+    const token = req.headers.authorization?.split(' ')[1]; // Bearer TOKEN
+    return this.auditService.create(dto, token);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateAuditDto: UpdateAuditDto) {
-    return this.auditService.update(id, updateAuditDto);
+  update(
+    @Param('id', ParseIntPipe) id: string,
+    @Body() updateDto: UpdateAuditDto,
+  ) {
+    return this.auditService.update(id, updateDto);
   }
 
-  @Get()
-findAll() {
-  return this.auditService.findAll();
-}
+  @Get(':id')
+  getOne(@Param('id', ParseIntPipe) id: string) {
+    return this.auditService.findOne(id);
+  }
+
+  @Delete(':id')
+  remove(@Param('id', ParseIntPipe) id: string) {
+    return this.auditService.remove(id);
+  }
 }

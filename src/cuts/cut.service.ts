@@ -1,53 +1,33 @@
-import { Injectable } from '@nestjs/common';
-import { CutRepository } from './cut.repository';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Cut } from './cut.entity';
 import { CreateCutDto } from './create-cutDto';
-import { extractEmployeeIdFromToken } from 'src/modules/temp-entities/helpers/extract-empoyee-id.helper';
+import { UpdateCutDto } from './update-cutDto';
+import { CutRepository } from './cut.repository';
+
 @Injectable()
-export class CutService {
-  constructor(private readonly cutRepo: CutRepository) {}
+export class CutsService {
+  constructor(private readonly repo: CutRepository) {}
 
-  async create(createCutDto: Partial<CreateCutDto>, token: string) {
-    const employeeId = extractEmployeeIdFromToken(token);
-    const unassignedAudits = await this.cutRepo.getUnassignedAudits();
-
-    const auditCount = unassignedAudits.length;
-    const saleCount = unassignedAudits.reduce(
-      (acc, audit) => acc + audit.sale_count,
-      0,
-    );
-    const totalAudits = unassignedAudits.reduce(
-      (acc, audit) => acc + Number(audit.total_cash) || 0,
-      0,
-    );
-    const totalCashSales = unassignedAudits.reduce(
-      (acc, audit) => acc + Number(audit.total_cash_sales || 0),
-      0,
-    );
-
-    const newCutData = {
-      ...createCutDto,
-      employeeId,
-      auditCount,
-      saleCount,
-      totalAudits,
-      totalCashSales,
-      date: new Date().toISOString().split('T')[0],
-      time: new Date().toTimeString().split(' ')[0],
-    };
-
-    const newCut = await this.cutRepo.createCut(newCutData);
-
-    const auditIds = unassignedAudits.map((a) => a.id);
-    await this.cutRepo.assignAuditsToCut(auditIds, newCut.id);
-
-    return newCut;
+  create(dto: CreateCutDto) {
+    return this.repo.createCut(dto);
   }
 
   findAll() {
-    return this.cutRepo.findAll();
+    return this.repo.findAll();
   }
 
-  update(id: number, updateCutDto: Partial<CreateCutDto>) {
-    return this.cutRepo.updateCut(id, updateCutDto);
+  async findOne(id: string) {
+    const cut = await this.repo.findOne(id);
+    if (!cut) throw new NotFoundException(`Cut #${id} not found`);
+    return cut;
+  }
+
+  update(id: string, dto: UpdateCutDto) {
+    return this.repo.updateCut(id, dto);
+  }
+
+  async remove(id: string) {
+    await this.repo.softDelete(id);
+    return { message: 'Cut eliminado correctamente' };
   }
 }

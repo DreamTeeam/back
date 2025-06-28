@@ -23,10 +23,10 @@ interface AuthenticatedSocket extends Socket {
 
 @WebSocketGateway(8080, {
   cors: {
-    origin: '*',
+    origin: 'http://localhost:4000',
+    credentials: true,
   },
 })
-
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
@@ -59,27 +59,27 @@ export class ChatGateway
       client.disconnect(true);
       return;
     }
-    
-//NACHO
+
+    //NACHO
     const cookies = client.handshake.headers.cookie;
     const token = this.extractTokenFromCookie(cookies);
 
-  try {
-    const secret = this.configService.get<string>('JWT_SECRET') || 'jwtsecurity';
-    const payload = jwt.verify(token, secret) as { sub: string };
+    try {
+      const secret =
+        this.configService.get<string>('JWT_SECRET') || 'jwtsecurity';
+      const payload = jwt.verify(token, secret) as { sub: string };
 
-    client.data.userId = payload.sub;
-    client.data.tenantSlug = tenantSlug;
+      client.data.userId = payload.sub;
+      client.data.tenantSlug = tenantSlug;
 
-    this.logger.log(
-      `Usuario conectado: ${client.id} (userId: ${payload.sub}) al tenant: ${tenantSlug}`,
-    );
-  } catch (err) {
-    this.logger.error('Token inválido en conexión WebSocket.');
-    client.disconnect(true);
+      this.logger.log(
+        `Usuario conectado: ${client.id} (userId: ${payload.sub}) al tenant: ${tenantSlug}`,
+      );
+    } catch (err) {
+      this.logger.error('Token inválido en conexión WebSocket.');
+      client.disconnect(true);
+    }
   }
-  }
-
 
   handleDisconnect(client: AuthenticatedSocket) {
     if (client.data.tenantSlug) {
@@ -98,11 +98,11 @@ export class ChatGateway
   }
 
   private extractTokenFromCookie(cookieHeader?: string): string {
-  if (!cookieHeader) return "";
-  const cookies = cookieHeader.split(";").map(c => c.trim());
-  const tokenCookie = cookies.find(c => c.startsWith("access_token="));
-  return tokenCookie?.split("=")[1] || "";
-}
+    if (!cookieHeader) return '';
+    const cookies = cookieHeader.split(';').map((c) => c.trim());
+    const tokenCookie = cookies.find((c) => c.startsWith('access_token='));
+    return tokenCookie?.split('=')[1] || '';
+  }
 
   @SubscribeMessage('event_join')
   handleJoinRoom(
@@ -128,7 +128,7 @@ export class ChatGateway
     this.logger.log(`Retransmitiendo mensaje a la sala ${tenantRoom}`);
 
     client.to(tenantRoom).emit('new_message', {
-      user: client.id,
+      user: client.data.userId,
       message: message,
       createdAt: new Date(),
     });
@@ -145,7 +145,7 @@ export class ChatGateway
 
     this.logger.log(`Cliente ${client.id} abandonando la sala ${tenantRoom}`);
 
-    client.leave(`room_${tenantRoom}`);
+    client.leave(tenantRoom);
     this.server.to(tenantRoom).emit('user_left', {
       user: client.id,
       message: `El usuario ${client.id.substring(0, 5)} se ha ido.`,

@@ -6,15 +6,18 @@ import {
   JoinColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  CreateDateColumn,
 } from 'typeorm';
+import { Cut } from 'src/cuts/cut.entity';
+import { Employee } from 'src/modules/users/entities/employee.entity';
 
 @Entity('tw_arqueos')
 export class Audit {
-  @PrimaryGeneratedColumn({ name: 'id_arqueo' })
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({
-    name: 'total_c_efectivo',
+    name: 'total_ventas_efectivo',
     type: 'decimal',
     precision: 10,
     scale: 2,
@@ -48,24 +51,26 @@ export class Audit {
   })
   total_cash: number;
 
+  @Column({ name: 's_descripcion', type: 'varchar', length: 255 })
+  description: string;
+
   @Column({ name: 'd_fecha_arqueo', type: 'date' })
   date: string;
 
   @Column({ name: 't_hora_arqueo', type: 'time' })
   time: string;
 
-  @Column({ name: 's_descripcion', type: 'varchar' })
-  description: string;
+  @ManyToOne(() => Employee, { eager: true })
+  @JoinColumn({ name: 'id_empleado' })
+  employee: Employee;
 
-  @Column({ name: 'id_empleado', type: 'int' })
-  employee_id: number;
+  @ManyToOne(() => Cut, (cut) => cut.audits, { nullable: true })
+  @JoinColumn({ name: 'id_corte' })
+  cut: Cut;
 
-  @Column({ name: 'id_corte', type: 'int' })
-  cut_id: number;
-
-  @UpdateDateColumn({ type: 'timestamp', name: 'updated_at' })
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updated_at: Date;
 
-  @DeleteDateColumn({ name: 'deleted_at' })
+  @DeleteDateColumn({ name: 'deleted_at', type: 'timestamp' })
   deleted_at?: Date;
 }

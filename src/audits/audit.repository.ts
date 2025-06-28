@@ -1,11 +1,8 @@
-import { Repository } from 'typeorm';
-import { Audit } from './audit.entity';
 import { Injectable } from '@nestjs/common';
-//import { InjectRepository } from '@nestjs/typeorm';
-import { Order } from 'src/modules/orders/entities/order.entity';
-import { IsNull } from 'typeorm';
-import { UpdateAuditDto } from './update-auditDto';
-import { InjectTenantRepository } from 'src/common/typeorm-tenant-repository/tenant-repository.decorator';
+import { Repository, IsNull } from 'typeorm';
+import { InjectTenantRepository } from '../common/typeorm-tenant-repository/tenant-repository.decorator';
+import { Audit } from './audit.entity';
+import { Order } from '../modules/orders/entities/order.entity';
 
 @Injectable()
 export class AuditRepository {
@@ -17,33 +14,59 @@ export class AuditRepository {
     private readonly orderRepo: Repository<Order>,
   ) {}
 
-  async getUnassignedOrders() {
+  async getPendingOrders(): Promise<Order[]> {
     return this.orderRepo.find({
       where: { audit: IsNull() },
-      relations: ['typeOfPayment'],
+      relations: ['type_of_payment'], // relación correcta según tu entity
     });
   }
 
-  async createAudit(audit: Partial<Audit>) {
-    const newAudit = this.auditRepo.create(audit);
-    return this.auditRepo.save(newAudit);
+  calculateSalesTotals(orders: Order[]) {
+    let cash = 0;
+    let card = 0;
+    let transfer = 0;
+
+    for (const order of orders) {
+      const paymentName = order.type_of_payment?.name ?? '';
+
+      if (paymentName === 'Efectivo') cash += +order.total_order;
+      else if (paymentName === 'Tarjeta') card += +order.total_order;
+      else if (paymentName === 'Transferencia') transfer += +order.total_order;
+    }
+
+    return { cash, card, transfer };
   }
 
-  async assignOrdersToAudit(orderIds: string[], auditId: number) {
+  async createAuditWithOrders(
+    auditData: Partial<Audit>,
+    orders: Order[],
+  ): Promise<Audit> {
+    const audit = this.auditRepo.create(auditData);
+    const savedAudit = await this.auditRepo.save(audit);
+
     await Promise.all(
-      orderIds.map((id) =>
-        this.orderRepo.update(id, { audit: { id: auditId } }),
-      ),
+      orders.map((o) => this.orderRepo.update(o.id, { audit: savedAudit })),
     );
+
+    return savedAudit;
   }
 
-  async findAll() {
-    return this.auditRepo.find();
+  findAll() {
+    return this.auditRepo.find({
+      relations: ['employee', 'employee.roles'],
+      order: { id: 'DESC' },
+    });
   }
 
-  async updateAudit(id: string, updateAuditDto: UpdateAuditDto) {
-    const auditId = parseInt(id, 10);
-    await this.auditRepo.update(auditId, updateAuditDto);
-    return this.auditRepo.findOne({ where: { id: auditId } });
+  findOne(id: string) {
+    return this.auditRepo.findOne({ where: { id } });
+  }
+
+  update(id: string, dto: Partial<Audit>) {
+    return this.auditRepo.update(id, dto);
+  }
+
+  softDelete(id: string) {
+    return this.auditRepo.softDelete(id);
   }
 }

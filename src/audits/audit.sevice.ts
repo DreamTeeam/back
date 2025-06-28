@@ -1,54 +1,54 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { AuditRepository } from './audit.repository';
-import { UpdateAuditDto } from './update-auditDto';
 import { CreateAuditDto } from './create-auditDto';
+import { UpdateAuditDto } from './update-auditDto';
+import { extractEmployeeIdFromToken } from '../modules/temp-entities/helpers/extract-empoyee-id.helper'; // opcional
+import { Employee } from '../modules/users/entities/employee.entity'; // 👈 Asegurate que este path sea correcto según tu estructura
+
 @Injectable()
 export class AuditService {
-  constructor(private readonly auditRepository: AuditRepository) {}
+  constructor(private readonly repo: AuditRepository) {}
 
-  async create(createAuditDto: CreateAuditDto) {
-     const unassignedOrders = await this.auditRepository.getUnassignedOrders();
+  async create(dto: CreateAuditDto, token?: string) {
+    const pendingOrders = await this.repo.getPendingOrders();
 
-     let totalCashSales = 0;
-     let totalCardSales = 0;
-     let totalTransferSales = 0;
-
-     for (const order of unassignedOrders) {
-  if (order.type_of_payment?.name === 'Efectivo') totalCashSales += +order.total_order;
-  else if (order.type_of_payment?.name === 'Tarjeta') totalCardSales += +order.total_order;
-  else if (order.type_of_payment?.name === 'Transferencia') totalTransferSales += +order.total_order;
-}
-
+    const { cash, card, transfer } =
+      this.repo.calculateSalesTotals(pendingOrders);
 
     const auditData = {
-      ...createAuditDto,
-       totalCashSales,
-       totalCardSales,
-       totalTransferSales,
-       saleCount: unassignedOrders.length,
+      description: dto.description,
+      totalCash: dto.totalCash,
+      totalCashSales: cash,
+      totalCardSales: card,
+      totalTransferSales: transfer,
+      saleCount: pendingOrders.length,
+      employee: {
+        id: token ? extractEmployeeIdFromToken(token) : dto.employeeId,
+      } as Employee, // 👈 Esto evita el error de TypeScript
       date: new Date().toISOString().split('T')[0],
       time: new Date().toTimeString().split(' ')[0],
-      cutId: undefined,
     };
 
-    const audit = await this.auditRepository.createAudit(auditData);
-
-     const orderIds = unassignedOrders.map((order) => order.id);
-     await this.auditRepository.assignOrdersToAudit(orderIds, audit.id);
-
-    return audit;
+    return this.repo.createAuditWithOrders(auditData, pendingOrders);
   }
 
- async findAll() {
-    return this.auditRepository.findAll();
+  findAll() {
+    return this.repo.findAll();
   }
 
-  async update(id: string, updateAuditDto: UpdateAuditDto) {
-    return this.auditRepository.updateAudit(id, updateAuditDto);
+  async update(id: string, dto: UpdateAuditDto) {
+    await this.repo.update(id, dto);
+    const updated = await this.repo.findOne(id);
+    if (!updated) throw new NotFoundException(`Audit #${id} no encontrado`);
+    return updated;
   }
 
+  findOne(id: string) {
+    return this.repo.findOne(id);
+  }
 
-
-
-
+  async remove(id: string) {
+    await this.repo.softDelete(id);
+    return { message: 'Audit eliminado correctamente' };
+  }
 }

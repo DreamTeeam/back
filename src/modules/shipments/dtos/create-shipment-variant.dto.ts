@@ -5,7 +5,7 @@ import { CreateShipmentSizeDto } from './create-shipment-size.dto';
 export class CreateShipmentVariantDto {
   @IsNumber()
   @IsNotEmpty()
-  variantId: number;
+  variant_id: string;
 
   @IsArray()
   @ValidateNested({ each: true })

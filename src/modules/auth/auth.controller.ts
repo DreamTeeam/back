@@ -103,6 +103,7 @@ export class AuthController {
       path: '/',
     });
     return { message: 'Login successful' };
+
   }
 
   @Get('employee/google')

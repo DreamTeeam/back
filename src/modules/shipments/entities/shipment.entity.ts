@@ -11,30 +11,33 @@ import { ShipmentVariant } from './shioment-variant.entity';
 
 @Entity('tw_embarques')
 export class Shipment {
-  @PrimaryGeneratedColumn({ name: 'id_embarque' })
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ name: 's_embarque', type: 'varchar' })
-  shipmentCode: string;
+  shipment_code: string;
 
   @Column({ name: 'd_fecha_embarque', type: 'date' })
-  shipmentDate: Date;
+  shipment_date: Date;
 
   @Column({ name: 'n_cantidad_productos', type: 'int', default: 0 })
-  totalProducts: number;
+  total_products: number;
 
   @Column({ name: 'n_cantidad_variantes', type: 'int', default: 0 })
-  totalVariants: number;
+  total_variants: number;
 
   @CreateDateColumn({ name: 'createdAt', type: 'timestamp' })
-  createdAt: Date;
+  created_at: Date;
 
   @UpdateDateColumn({ name: 'updatedAt', type: 'timestamp' })
-  updatedAt: Date;
+  updated_at: Date;
 
   @DeleteDateColumn({ name: 'deletedAt', type: 'timestamp' })
-  deletedAt: Date;
+  deleted_at: Date;
 
-  @OneToMany(() => ShipmentVariant, (variant: ShipmentVariant) => variant.shipment)
+  @OneToMany(
+    () => ShipmentVariant,
+    (variant: ShipmentVariant) => variant.shipment,
+  )
   variants: ShipmentVariant[];
 }

@@ -3,7 +3,7 @@ import { IsNumber, IsNotEmpty } from 'class-validator';
 export class CreateShipmentSizeDto {
   @IsNumber()
   @IsNotEmpty()
-  sizeId: number;
+  size_id: string;
 
   @IsNumber()
   @IsNotEmpty()

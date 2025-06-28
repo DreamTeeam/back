@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
-//import { TypeOrmModule } from '@nestjs/typeorm';
-import { Cut } from 'src/cuts/cut.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Cut } from './cut.entity';
+import { CutsController } from './cut.controller';
+import { CutsService } from './cut.service';
+import { CutRepository } from './cut.repository';
 import { Audit } from 'src/audits/audit.entity';
-import { CutService } from 'src/cuts/cut.service';
-import { CutController } from 'src/cuts/cut.controller';
-import { CutRepository } from 'src/cuts/cut.repository';
-import { TenantTypeOrmModule } from 'src/common/typeorm-tenant-repository/tenant-repository.provider';
+
 @Module({
-  imports: [TenantTypeOrmModule.forFeature([Cut, Audit])],
-  controllers: [CutController],
-  providers: [CutService, CutRepository],
+  imports: [TypeOrmModule.forFeature([Cut, Audit])], // Importás las entidades para que el repositorio funcione
+  controllers: [CutsController],
+  providers: [CutsService, CutRepository],
 })
 export class CutModule {}

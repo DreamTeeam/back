@@ -60,4 +60,14 @@ export class EmployeesService {
     employeeToUpdate.roles = rolesToAssign;
     return this.employeeRepository.save(employeeToUpdate);
   }
+
+  // FLOR AGREGADO
+  async findAllForTenant(): Promise<Employee[]> {
+    return this.employeeRepository.find({
+      relations: {
+        user: true,
+        roles: true,
+      },
+    });
+  }
 }
