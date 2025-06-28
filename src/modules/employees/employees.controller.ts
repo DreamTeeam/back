@@ -33,8 +33,8 @@ export class EmployeesController {
     );
   }
 
+  
   @Get('list') // FLOR AGREGADO
-  // @Roles('ADMIN', 'MANAGER')
   @HttpCode(HttpStatus.OK)
   getTenantEmployees() {
     return this.employeesService.findAllForTenant();
