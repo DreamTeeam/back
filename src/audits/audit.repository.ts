@@ -17,7 +17,7 @@ export class AuditRepository {
   async getPendingOrders(): Promise<Order[]> {
     return this.orderRepo.find({
       where: { audit: IsNull() },
-      relations: ['type_of_payment'], // relación correcta según tu entity
+      relations: ['type_of_payment'],
     });
   }
 

@@ -24,7 +24,7 @@ export class AuditController {
   }
 
   @Post()
-  create(@Body() dto: CreateAuditDto, @Req() req: Request) {
+  create(@Body() dto: CreateAuditDto, @Req() req: Request) {  // @Req() req: Request   
     const token = req.headers.authorization?.split(' ')[1]; // Bearer TOKEN
     return this.auditService.create(dto, token);
   }

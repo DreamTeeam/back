@@ -6,10 +6,14 @@ import {
   Put,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { TodosService } from './todos.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
+import { GetUser } from '../auth/decorators/get-user.decorator';
+import { AuthGuard } from '@nestjs/passport';
+import { Employee } from '../users/entities/employee.entity';
 
 @Controller('todos')
 export class TodosController {
@@ -21,7 +25,8 @@ export class TodosController {
   }
 
   @Get()
-  findAll() {
+  @UseGuards(AuthGuard('jwt'))
+  findAll(@GetUser() employee: Employee) {
     return this.todosService.findAll();
   }
 

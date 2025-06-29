@@ -24,7 +24,7 @@ export class AuditService {
       saleCount: pendingOrders.length,
       employee: {
         id: token ? extractEmployeeIdFromToken(token) : dto.employeeId,
-      } as Employee, // 👈 Esto evita el error de TypeScript
+      } as Employee,
       date: new Date().toISOString().split('T')[0],
       time: new Date().toTimeString().split(' ')[0],
     };
@@ -37,7 +37,8 @@ export class AuditService {
   }
 
   async update(id: string, dto: UpdateAuditDto) {
-    await this.repo.update(id, dto);
+    const updateData: Partial<any> = { ...dto }; 
+    await this.repo.update(id, updateData);
     const updated = await this.repo.findOne(id);
     if (!updated) throw new NotFoundException(`Audit #${id} no encontrado`);
     return updated;

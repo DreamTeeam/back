@@ -35,6 +35,7 @@ export class EmployeesService {
     const isTargetSuperAdmin = employeeToUpdate.roles.some(
       (role) => role.name === 'SUPERADMIN',
     );
+    
     if (isTargetSuperAdmin) {
       throw new ForbiddenException(
         'The roles of a SUPERADMIN cannot be modified',

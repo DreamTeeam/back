@@ -22,7 +22,7 @@ export class Audit {
     precision: 10,
     scale: 2,
   })
-  total_cash_sales: number;
+  total_ventas_efectivo: number;
 
   @Column({
     name: 'total_ventas_tarjeta',
@@ -38,10 +38,10 @@ export class Audit {
     precision: 10,
     scale: 2,
   })
-  total_transfer_sales: number;
+  total_ventas_tarjeta: number;
 
   @Column({ name: 'n_cantidad_ventas', type: 'int' })
-  sale_count: number;
+  n_cantidad_ventas: number;
 
   @Column({
     name: 'n_total_efectivo',
@@ -49,16 +49,16 @@ export class Audit {
     precision: 10,
     scale: 2,
   })
-  total_cash: number;
+  n_total_efectivo: number;
 
   @Column({ name: 's_descripcion', type: 'varchar', length: 255 })
-  description: string;
+  s_descripcion: string;
 
   @Column({ name: 'd_fecha_arqueo', type: 'date' })
-  date: string;
+  d_fecha_arqueo: string;
 
   @Column({ name: 't_hora_arqueo', type: 'time' })
-  time: string;
+  t_hora_arqueo: string;
 
   @ManyToOne(() => Employee, { eager: true })
   @JoinColumn({ name: 'id_empleado' })

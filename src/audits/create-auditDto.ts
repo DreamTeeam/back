@@ -1,4 +1,4 @@
-import { IsUUID, IsNotEmpty, IsString } from 'class-validator';
+import { IsUUID, IsNotEmpty, IsString, IsOptional } from 'class-validator';
 
 export class CreateAuditDto {
   @IsNotEmpty()
@@ -8,6 +8,6 @@ export class CreateAuditDto {
   totalCash: number;
 
   @IsUUID()
-  @IsNotEmpty()
-  employeeId: string;
+  @IsOptional()
+  employeeId?: string;
 }
