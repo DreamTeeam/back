@@ -32,8 +32,8 @@ export class SubscriptionsService {
       customerName,
     );
 
-    const successUrl = 'http://localhost:4000/payment-success';
-    const cancelUrl = 'http://localhost:4000/payment-cancelled';
+    const successUrl = 'http://localhost:4000/subscripton_payment/success';
+    const cancelUrl = 'http://localhost:4000/subscripton_payment/cancelled';
 
     const checkoutSession =
       await this.stripeService.createSubscriptionCheckoutSession(
