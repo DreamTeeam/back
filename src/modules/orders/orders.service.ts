@@ -8,7 +8,7 @@ import {
 import { DataSource, EntityManager } from 'typeorm';
 import { CreateOrderDto, ProductOrderDto } from './dto/create-order.dto';
 import { StripeService } from '../stripe/stripe.service';
-import { Order } from './entities/order.entity';
+import { Order, OrderStatus } from './entities/order.entity';
 import { OrderDetail } from './entities/orderDetail.entity';
 import Stripe from 'stripe';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -21,6 +21,7 @@ import { CreateCancellationDto } from '../cancellation/dto/create-cancellation.d
 import { VariantSize } from '../variantSIzes/entities/variantSizes.entity';
 import { InjectTenantRepository } from '../../common/typeorm-tenant-repository/tenant-repository.decorator';
 import { getTenantContext } from '../../common/context/tenant-context';
+import { PaymentMethod } from './payment-method.enum';
 
 @Injectable() // <-- Añadir esto explícitamente
 export class OrdersService {
@@ -46,11 +47,11 @@ export class OrdersService {
   }
 
   async processNewOrder(dto: CreateOrderDto) {
-    if (dto.payment_method === 'Efectivo') {
+    if (dto.payment_method === PaymentMethod.Efectivo) {
       return this.createCashOrder(dto);
     }
 
-    if (dto.payment_method === 'Tarjeta') {
+    if (dto.payment_method === PaymentMethod.Tarjeta) {
       return this.createCardPaymentSession(dto);
     }
 
@@ -79,6 +80,7 @@ export class OrdersService {
           orderProducts: dto.products,
           dbVariants,
           totalOrder,
+          paymentMethod: dto.payment_method,
         },
         entityManager,
       ),
@@ -210,6 +212,7 @@ export class OrdersService {
           orderProducts,
           dbVariants,
           totalOrder: session.amount_total! / 100,
+          paymentMethod: PaymentMethod.Tarjeta,
         },
         entityManager,
       ),
@@ -223,11 +226,18 @@ export class OrdersService {
       orderProducts: ProductOrderDto[];
       dbVariants: ProductVariant[];
       totalOrder: number;
+      paymentMethod: PaymentMethod;
     },
     entityManager: EntityManager,
   ): Promise<Order> {
-    const { employeeId, clientEmail, orderProducts, dbVariants, totalOrder } =
-      data;
+    const {
+      employeeId,
+      clientEmail,
+      orderProducts,
+      dbVariants,
+      totalOrder,
+      paymentMethod,
+    } = data;
 
     const employee = await entityManager.findOneBy(Employee, {
       id: employeeId,
@@ -298,6 +308,8 @@ export class OrdersService {
     );
     order.date = new Date().toISOString().split('T')[0];
     order.time = new Date().toTimeString().split(' ')[0];
+    order.status = OrderStatus.COMPLETED;
+    order.payment_method = paymentMethod;
 
     order.details = orderProducts.map((item, index) => {
       const variant = variantMap.get(item.variant_id)!;
@@ -312,7 +324,7 @@ export class OrdersService {
       });
     });
 
-    this.logger.log(`Orden creada exitosamente desde Stripe.`);
+    this.logger.log(`Orden creada exitosamente.`);
 
     return entityManager.save(order);
   }
@@ -372,11 +384,11 @@ export class OrdersService {
     orderId: string,
     employeeId: string,
     dto: CreateCancellationDto,
-  ): Promise<Order> {
+  ): Promise<{ message: string }> {
     return this.dataSource.transaction(async (entityManager) => {
       const order = await entityManager.findOne(Order, {
         where: { id: orderId },
-        relations: ['details', 'details.variant', 'cancellation'],
+        relations: ['details', 'details.variantSize', 'cancellation'],
       });
 
       if (!order) {
@@ -390,26 +402,16 @@ export class OrdersService {
       }
 
       for (const detail of order.details) {
-        const variantSize = await entityManager.findOne(VariantSize, {
-          where: {
-            variantProduct: { id: detail.variant.id },
-            // Necesitarías el size_id aquí si el stock es por talla
-            // y orderDetail no lo guarda directamente.
-            // Si orderDetail.variantSize es una relación, puedes usarlo:
-            // size: { id: detail.variantSize.size.id }
-          },
-        });
-
-        if (variantSize) {
+        if (detail.variantSize && detail.variantSize.id) {
           await entityManager.increment(
             VariantSize,
-            { id: variantSize.id },
+            { id: detail.variantSize.id },
             'stock',
             detail.total_amount_of_products,
           );
         } else {
           this.logger.warn(
-            `No se encontró VariantSize para la variante ${detail.variant.id} al intentar restituir stock.`,
+            `El detalle de orden ${detail.id} no tiene una relación VariantSize válida. No se pudo restituir stock para este item.`,
           );
         }
       }
@@ -425,12 +427,15 @@ export class OrdersService {
       );
 
       order.cancellation = cancellation;
+      order.status = OrderStatus.CANCELLED;
 
       this.logger.log(
         `Orden ${orderId} cancelada por empleado ${employeeId}. Stock restituido.`,
       );
 
-      return entityManager.save(order);
+      await entityManager.save(order);
+
+      return { message: `Orden ${orderId} cancelada exitosamente.` };
     });
   }
 }
