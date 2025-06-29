@@ -56,14 +56,57 @@ export class CancellationService {
   }
 
   async findAll(): Promise<Cancellation[]> {
-    return this.cancellationRepository.find();
+    return this.cancellationRepository.find({
+      select: {
+        id: true,
+        cancellation_comment: true,
+        created_at: true,
+        order: {
+          id: true,
+          total_order: true,
+        },
+        employee: {
+          id: true,
+
+          user: {
+            first_name: true,
+            last_name: true,
+          },
+        },
+      },
+      relations: {
+        order: true,
+        employee: {
+          user: true,
+        },
+        cancellationReason: true,
+      },
+    });
   }
 
   async findOne(id: string): Promise<Cancellation> {
-    const cancellation = await this.cancellationRepository.findOneBy({ id });
+    const cancellation = await this.cancellationRepository.findOne({
+      where: { id },
+      select: {
+        id: true,
+        cancellation_comment: true,
+        created_at: true,
+        order: { id: true, total_order: true },
+        employee: { id: true, user: { first_name: true, last_name: true } },
+      },
+      relations: {
+        order: true,
+        employee: {
+          user: true,
+        },
+        cancellationReason: true,
+      },
+    });
+
     if (!cancellation) {
-      throw new NotFoundException(`Cancelacion con id "${id}" no encontrada`);
+      throw new NotFoundException(`Cancelación con id "${id}" no encontrada`);
     }
+
     return cancellation;
   }
 

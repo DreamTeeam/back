@@ -18,12 +18,13 @@ interface AuthenticatedSocket extends Socket {
   data: {
     tenantSlug: string;
     userId: string;
+    userName?: string;
   };
 }
 
 @WebSocketGateway(8080, {
   cors: {
-    origin: 'http://localhost:4000',
+    origin: '*', //'http://localhost:4000',
     credentials: true,
   },
 })
@@ -43,15 +44,15 @@ export class ChatGateway
   }
 
   async handleConnection(client: AuthenticatedSocket) {
-    const tenantSlug = client.handshake.auth?.tenantSlug;
+    const tenantSlug = client.handshake.auth?.tenantSlug; //aca leemos el payload de auth para obtener el token
+    const token = client.handshake.auth?.token;
 
-    if (!tenantSlug) {
+    if (!tenantSlug || !token) {
       this.logger.error('Conexión rechazada: No se proporcionó tenantSlug.');
-      client.disconnect(true);
-      return;
+      return client.disconnect(true);
     }
 
-    const isValidTenant = await this.chatService.validateTenant(tenantSlug);
+    const isValidTenant = await this.chatService.validateTenant(tenantSlug); // validamos con el servicio el tenant
     if (!isValidTenant) {
       this.logger.error(
         `Conexión rechazada: usuario inválido '${tenantSlug}'.`,
@@ -61,19 +62,24 @@ export class ChatGateway
     }
 
     //NACHO
-    const cookies = client.handshake.headers.cookie;
-    const token = this.extractTokenFromCookie(cookies);
+    // const cookies = client.handshake.headers.cookie;
+    // const token1 = this.extractTokenFromCookie(cookies);
 
     try {
       const secret =
         this.configService.get<string>('JWT_SECRET') || 'jwtsecurity';
-      const payload = jwt.verify(token, secret) as { sub: string };
+      const payload = jwt.verify(token, secret) as {
+        //aca verifico que el token sea valido
+        sub: string;
+        name: string;
+      };
 
       client.data.userId = payload.sub;
+      client.data.userName = payload.name;
       client.data.tenantSlug = tenantSlug;
 
       this.logger.log(
-        `Usuario conectado: ${client.id} (userId: ${payload.sub}) al tenant: ${tenantSlug}`,
+        `Usuario conectado: ${client.id} (User: ${payload.name}, ID: ${payload.sub}) al tenant: ${tenantSlug}`,
       );
     } catch (err) {
       this.logger.error('Token inválido en conexión WebSocket.');
@@ -84,7 +90,7 @@ export class ChatGateway
   handleDisconnect(client: AuthenticatedSocket) {
     if (client.data.tenantSlug) {
       this.logger.log(
-        `Usuario desconectado: ${client.id} del db: ${client.data.tenantSlug}`,
+        `Usuario desconectado: ${client.data.userName || client.id} del db: ${client.data.tenantSlug}`,
       );
     } else {
       this.logger.log(
@@ -112,7 +118,9 @@ export class ChatGateway
     const tenantSlug = client.handshake.auth?.tenantSlug;
     const tenantRoom = this.getTenantRoomName(tenantSlug, room);
 
-    this.logger.log(`Cliente ${client.id} uniéndose a la sala ${tenantRoom}`);
+    this.logger.log(
+      `Cliente ${client.data.userName || client.id} uniéndose a la sala ${tenantRoom}`,
+    );
     client.join(tenantRoom);
   }
 
@@ -125,10 +133,12 @@ export class ChatGateway
     const { room, message } = payload;
     const tenantRoom = this.getTenantRoomName(tenantSlug, room);
 
-    this.logger.log(`Retransmitiendo mensaje a la sala ${tenantRoom}`);
+    this.logger.log(
+      `Retransmitiendo mensaje de '${client.data.userName}' a la sala ${tenantRoom}`,
+    );
 
     client.to(tenantRoom).emit('new_message', {
-      user: client.data.userId,
+      user: client.data.userName || client.data.userId,
       message: message,
       createdAt: new Date(),
     });

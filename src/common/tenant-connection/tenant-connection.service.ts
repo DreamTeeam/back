@@ -44,7 +44,6 @@ import { MembershipStatus } from '../../catalogues/MembershipStatus/entities/mem
 import { Shipment } from 'src/modules/shipments/entities/shipment.entity';
 import { ShipmentSize } from 'src/modules/shipments/entities/shipment-size.entity';
 import { ShipmentVariant } from 'src/modules/shipments/entities/shioment-variant.entity';
-import { TypeOfPayment } from '../../modules/type-of-payment/type-of-payment.entity';
 import { Audit } from '../../audits/audit.entity';
 import { Cut } from '../../cuts/cut.entity';
 
@@ -55,7 +54,6 @@ import { Employee } from '../../modules/users/entities/employee.entity';
 import { Client } from '../../modules/users/entities/client.entity';
 import { Role } from '../../modules/roles/entities/role.entity';
 import { Customer } from 'src/master_data/customer/entities/customer.entity';
-
 
 @Injectable()
 export class TenantConnectionService implements OnModuleDestroy {
@@ -136,7 +134,6 @@ export class TenantConnectionService implements OnModuleDestroy {
         ProductVariant,
         MembershipStatus,
         Size,
-        TypeOfPayment,
         CancellationReason,
         VariantSize,
         Color,
