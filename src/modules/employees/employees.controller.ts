@@ -33,10 +33,9 @@ export class EmployeesController {
     );
   }
 
-  
-  @Get('list') // FLOR AGREGADO
+ @Get('list')
   @HttpCode(HttpStatus.OK)
-  getTenantEmployees() {
+  getTenantEmployees(): Promise<any[]> {
     return this.employeesService.findAllForTenant();
   }
 }

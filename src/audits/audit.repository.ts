@@ -27,7 +27,8 @@ export class AuditRepository {
     let transfer = 0;
 
     for (const order of orders) {
-      const paymentName = order.type_of_payment?.name ?? '';
+      const paymentName = order.payment_method ?? '';
+      // const paymentName = order.type_of_payment?.name ?? '';
 
       if (paymentName === 'Efectivo') cash += +order.total_order;
       else if (paymentName === 'Tarjeta') card += +order.total_order;

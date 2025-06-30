@@ -20,7 +20,6 @@ import { RolesGuard } from './guards/roles.guard';
 import { Response, Request } from 'express';
 
 
-
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -38,7 +37,7 @@ export class AuthController {
       httpOnly: true,
       secure: false,
       sameSite: 'lax',
-      expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 días
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 días
     });
     
     return { message: 'Login successful' };
@@ -70,7 +69,7 @@ export class AuthController {
       httpOnly: true,
       secure: false,
       sameSite: 'lax',
-      expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 días
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 días
     });
     response.redirect(
       'http://localhost:3000/auth/success?from=google&type=client',
@@ -100,9 +99,7 @@ export class AuthController {
       httpOnly: true,
       secure: false,
       sameSite: 'lax',
-      //secure: false, // <--- En desarrollo esto debe estar en false
-      // secure: process.env.NODE_ENV === 'production', <---- esto en desarrollo debe estar comentado
-      expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 días
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 días
       path: '/',
     });
     return { message: 'Login successful' };
@@ -128,20 +125,12 @@ export class AuthController {
       sameSite: 'lax',
       //secure: false, // <--- En desarrollo esto debe estar en false
       // secure: process.env.NODE_ENV === 'production', <---- esto en desarrollo debe estar comentado
-      expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 días,
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 días,
     });
     response.redirect(
       'http:/localhost:3000/auth/success?from=google&type=employee',
     );
   }
-
-  //% 1. Método login con jwt Token
-  // @Post('login')
-  // @HttpCode(HttpStatus.OK)
-  // login(@Body(new ValidationPipe()) loginDto: LoginDto) {
-  //   return this.authService.login(loginDto);
-  // }
-
   //& --- RUTA DE LOGOUT ---
   @Post('logout')
   @HttpCode(HttpStatus.OK)

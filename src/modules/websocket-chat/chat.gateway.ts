@@ -24,7 +24,7 @@ interface AuthenticatedSocket extends Socket {
 
 @WebSocketGateway(8080, {
   cors: {
-    origin: '*', //'http://localhost:4000',
+    origin: 'http://localhost:4000', //'',
     credentials: true,
   },
 })
@@ -45,7 +45,8 @@ export class ChatGateway
 
   async handleConnection(client: AuthenticatedSocket) {
     const tenantSlug = client.handshake.auth?.tenantSlug; //aca leemos el payload de auth para obtener el token
-    const token = client.handshake.auth?.token;
+    const cookies = client.handshake.headers.cookie;
+    const token = this.extractTokenFromCookie(cookies);
 
     if (!tenantSlug || !token) {
       this.logger.error('Conexión rechazada: No se proporcionó tenantSlug.');
@@ -141,6 +142,7 @@ export class ChatGateway
       user: client.data.userName || client.data.userId,
       message: message,
       createdAt: new Date(),
+      room,
     });
   }
 
