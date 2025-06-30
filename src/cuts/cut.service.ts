@@ -1,16 +1,50 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Cut } from './cut.entity';
+import { CutRepository } from './cut.repository';
 import { CreateCutDto } from './create-cutDto';
 import { UpdateCutDto } from './update-cutDto';
-import { CutRepository } from './cut.repository';
+import { InjectTenantRepository } from '../common/typeorm-tenant-repository/tenant-repository.decorator';
+import { Repository } from 'typeorm';
+import { Employee } from '../modules/users/entities/employee.entity';
 
 @Injectable()
 export class CutsService {
-  constructor(private readonly repo: CutRepository) {}
+  constructor(
+    private readonly repo: CutRepository,
+    @InjectTenantRepository(Employee)
+    private readonly employeeRepo: Repository<Employee>,
+  ) {}
 
-  create(dto: CreateCutDto) {
-    return this.repo.createCut(dto);
+  
+
+    async create(dto: CreateCutDto, user: any) {
+  const userId = user.userId || user.sub;
+
+  let employee = await this.repo.employeeRepo.findOne({
+    where: { user: { id: userId } },
+    relations: ['user']
+  });
+
+  if (!employee) {
+    const userExists = await this.repo.employeeRepo.manager.findOne('User', {
+      where: { id: userId }
+    });
+    
+    if (userExists) {
+      employee = await this.repo.employeeRepo.save({
+        user: userExists,
+        roles: []
+      });
+    } else {
+      throw new NotFoundException('Usuario no encontrado');
+    }
   }
+
+  return this.repo.createCut({
+    ...dto,
+    employee_id: employee.id,
+  });
+}
+
 
   findAll() {
     return this.repo.findAll();
@@ -31,3 +65,9 @@ export class CutsService {
     return { message: 'Cut eliminado correctamente' };
   }
 }
+
+
+
+
+
+

@@ -2,6 +2,7 @@ import {
   Injectable,
   Logger,
   InternalServerErrorException,
+  BadRequestException,
 } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { StripeService } from '../stripe/stripe.service';
@@ -12,6 +13,7 @@ import { User } from '../users/entities/user.entity';
 import { Client } from '../users/entities/client.entity';
 import { MembershipStatus } from 'src/catalogues/MembershipStatus/entities/membership-status.entity';
 import { CreateSubscriptionDto } from './create-subscription.dto';
+import { getTenantContext } from 'src/common/context/tenant-context';
 
 @Injectable()
 export class SubscriptionsService {
@@ -23,6 +25,19 @@ export class SubscriptionsService {
   ) {}
 
   async createSubscriptionCheckout(dto: CreateSubscriptionDto) {
+    // --- LÓGICA NUEVA PARA OBTENER EL TENANT ID ---
+    const tenantContext = getTenantContext();
+    if (!tenantContext || !tenantContext.customerId) {
+      this.logger.error(
+        'No se pudo obtener el customerId del contexto del tenant para crear la sesión de Stripe.',
+      );
+      throw new BadRequestException(
+        'Falta información del tenant para procesar la suscripción.',
+      );
+    }
+    const currentTenantId = tenantContext.customerId;
+    // --- FIN DE LA LÓGICA NUEVA ---
+
     const { email, price_id, first_name, last_name } = dto;
     const customerName =
       first_name && last_name ? `${first_name} ${last_name}` : email;
@@ -32,8 +47,8 @@ export class SubscriptionsService {
       customerName,
     );
 
-    const successUrl = 'http://localhost:4000/payment-success';
-    const cancelUrl = 'http://localhost:4000/payment-cancelled';
+    const successUrl = 'http://localhost:4000/subscripton_payment/success';
+    const cancelUrl = 'http://localhost:4000/subscripton_payment/cancelled';
 
     const checkoutSession =
       await this.stripeService.createSubscriptionCheckoutSession(
@@ -43,7 +58,7 @@ export class SubscriptionsService {
         cancelUrl,
         {
           context: dto.context,
-          customer_id: dto.customer_id!,
+          customerId: currentTenantId,
         },
       );
 

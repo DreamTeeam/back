@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { Category } from './entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -22,7 +22,7 @@ export class CategoryService {
 
   async create(createDto: CreateCategoryDto): Promise<any> {
     const { name, key } = createDto;
-     const slug = slugify(name); //NACHO
+    const slug = slugify(name); //NACHO
 
     const existing = await this.categoryRepository.findOne({
       where: [{ name }, { key }],
@@ -37,8 +37,17 @@ export class CategoryService {
     }
     const category = this.categoryRepository.create({
       ...createDto,
-       slug, // NACHO
+      slug, // NACHO
     });
+
+    const existingSlug = await this.categoryRepository.findOne({
+      where: { slug },
+    });
+    if (existingSlug) {
+      throw new BadRequestException(
+        `Category already exists with slug: ${slug}`,
+      );
+    }
     const saved = await this.categoryRepository.save(category);
     return instanceToPlain(saved);
   }
@@ -71,11 +80,43 @@ export class CategoryService {
     id: string,
     updateDto: UpdateCategoryDto,
   ): Promise<{ message: string }> {
-    const exists = await this.categoryRepository.findOne({
-      where: { id },
-    });
-    if (!exists)
+    const exists = await this.categoryRepository.findOne({ where: { id } });
+    if (!exists) {
       throw new NotFoundException(`Category with id ${id} not found`);
+    }
+
+    if (updateDto.name) {
+      const nameConflict = await this.categoryRepository.findOne({
+        where: {
+          name: updateDto.name,
+          id: Not(id),
+        },
+      });
+
+      if (nameConflict) {
+        throw new BadRequestException(
+          `Category with name "${updateDto.name}" already exists`,
+        );
+      }
+
+      updateDto.slug = slugify(updateDto.name);
+    }
+
+    if (updateDto.key) {
+      const keyConflict = await this.categoryRepository.findOne({
+        where: {
+          key: updateDto.key,
+          id: Not(id),
+        },
+      });
+
+      if (keyConflict) {
+        throw new BadRequestException(
+          `Category with key "${updateDto.key}" already exists`,
+        );
+      }
+    }
+
     await this.categoryRepository.update(id, updateDto);
     return { message: `Category with id ${id} updated successfully` };
   }

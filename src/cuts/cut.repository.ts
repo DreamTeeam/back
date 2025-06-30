@@ -3,6 +3,7 @@ import { Repository, IsNull } from 'typeorm';
 import { InjectTenantRepository } from '../common/typeorm-tenant-repository/tenant-repository.decorator';
 import { Cut } from './cut.entity';
 import { Audit } from '../audits/audit.entity';
+import { Employee } from 'src/modules/users/entities/employee.entity';
 
 @Injectable()
 export class CutRepository {
@@ -12,6 +13,9 @@ export class CutRepository {
 
     @InjectTenantRepository(Audit)
     private readonly auditRepo: Repository<Audit>,
+
+    @InjectTenantRepository(Employee) 
+    public readonly employeeRepo: Repository<Employee>,
   ) {}
 
   async getUnassignedAudits() {

@@ -58,6 +58,10 @@ export class CreateProductDto {
   // @IsNotEmpty()
   // employee_id: string;
 
+  @IsOptional() // NACHO
+  @IsString()
+  slug?: string;
+
  @ApiProperty({
   type: [CreateProductVariantDto],
   example: [

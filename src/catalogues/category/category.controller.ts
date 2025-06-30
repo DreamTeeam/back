@@ -46,7 +46,7 @@ export class CategoryController {
     return this.categoryService.delete(id);
   }
 
-  @Get('slug/:slug') // NACHO
+    @Get('slug/:slug') // NACHO
   findBySlug(@Param('slug') slug: string) {
     return this.categoryService.findBySlug(slug);
   }

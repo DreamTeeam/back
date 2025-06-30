@@ -11,8 +11,8 @@ import { VariantSize } from '../variantSIzes/entities/variantSizes.entity';
 import { Color } from 'src/catalogues/colorProduct/entities/colorProduct.entity';
 import { ProductVariantModule } from '../productsVariant/product-variant.module';
 import { TenantTypeOrmModule } from 'src/common/typeorm-tenant-repository/tenant-repository.provider';
-import { ProductSearchService } from './searchProducts.service';
 import { ProductsCsvService } from './csv/product-csv.service';
+import { ProductSearchService } from './searchProducts.service';
 
 @Module({
   imports: [TenantTypeOrmModule.forFeature([Product, Category, SubCategory, Brand, Color, ProductVariant, VariantSize]),

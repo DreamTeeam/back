@@ -62,7 +62,8 @@ export class EmployeesService {
     return this.employeeRepository.save(employeeToUpdate);
   }
 
-async findAllForTenant(): Promise<any[]> {
+  // FLOR AGREGADO
+  async findAllForTenant(): Promise<any[]> {
     const employees = await this.employeeRepository.find({
       select: {
         user: { id: true, email: true, first_name: true, last_name: true },

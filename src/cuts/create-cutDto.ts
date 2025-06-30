@@ -6,38 +6,53 @@ import {
   IsNumber,
   Min,
 } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCutDto {
+  @ApiProperty({ example: '2025-06-28' })
   @IsDateString()
   date: string;
 
+  @ApiProperty({ example: '18:30:00' })
   @IsMilitaryTime()
   time: string;
 
+  @ApiProperty({ example: 3 })
   @IsInt()
   @Min(0)
-  auditCount: number;
+  audit_count: number;
 
+  @ApiProperty({ example: 15000.5 })
   @IsNumber()
-  totalAudits: number;
+  total_audits: number;
 
+  @ApiProperty({ example: 10 })
   @IsInt()
   @Min(0)
-  saleCount: number;
+  sale_count: number;
 
+  @ApiProperty({ example: 30000.0 })
   @IsNumber()
-  totalCashSales: number;
+  total_cash_sales: number;
 
+  @ApiProperty({ example: 'Cierre de caja del turno mañana' })
   @IsString()
   description: string;
 
+  @ApiProperty({ example: 2 })
   @IsInt()
   @Min(0)
-  expenseCount: number;
+  expense_count: number;
 
+  @ApiProperty({ example: 4500.75 })
   @IsNumber()
-  totalExpenses: number;
+  total_expenses: number;
 
-  @IsString()
-  employeeId: string;
+  
 }
+
+
+
+
+
+

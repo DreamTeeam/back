@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { Client } from 'src/modules/users/entities/client.entity';
 import { Employee } from 'src/modules/users/entities/employee.entity';
+import { Customer } from 'src/master_data/customer/entities/customer.entity';
 
 @Entity('tw_notifications')
 export class Notification {
@@ -33,6 +34,9 @@ export class Notification {
 
   @ManyToOne(() => Employee, { nullable: true })
   employee: Employee;
+
+  @ManyToOne(() => Customer, { nullable: true, onDelete: 'SET NULL' })
+  customer: Customer;
 
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;

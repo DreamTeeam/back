@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { forwardRef, Module, Scope } from '@nestjs/common';
 import { SubscriptionsService } from './subscriptions.service';
 import { SubscriptionsController } from './subscriptions.controller';
 import { StripeModule } from '../stripe/stripe.module';
@@ -11,7 +11,13 @@ import { TenantTypeOrmModule } from '../../common/typeorm-tenant-repository/tena
     TenantTypeOrmModule.forFeature([Client]),
     forwardRef(() => StripeModule),
   ],
-  providers: [SubscriptionsService],
+  providers: [
+    {
+      provide: SubscriptionsService,
+      useClass: SubscriptionsService,
+      scope: Scope.REQUEST,
+    },
+  ],
   controllers: [SubscriptionsController],
   exports: [SubscriptionsService],
 })

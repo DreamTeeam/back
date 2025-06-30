@@ -149,11 +149,20 @@ export class ProductVariantService {
   }
 
   async delete(id: string): Promise<{ message: string }> {
-    const exists = await this.variantRepository.findOneBy({ id });
-    if (!exists) {
+    const variant = await this.variantRepository.findOne({
+      where: { id },
+      relations: ['variantSizes'],
+    });
+
+    if (!variant) {
       throw new NotFoundException(`Variant with ID ${id} not found`);
     }
+
+    await Promise.all(
+      variant.variantSizes.map((vs) => this.variantSizeService.remove(vs.id)),
+    );
     await this.variantRepository.update(id, { deleted_at: new Date() });
+
     return { message: `Variant with ID ${id} deleted successfully` };
   }
 }

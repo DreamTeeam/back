@@ -12,18 +12,18 @@ import {
   Res,
   UploadedFile,
   UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { AutoAudit } from '../auditModification/decorator/audit-log.decorator';
-import { ProductSearchService } from './searchProducts.service';
 import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
 import { ProductsCsvService } from './csv/product-csv.service';
 import { Response } from 'express';
-
+>>>>>>>>> Temporary merge branch 2
 @Controller('products')
 export class ProductController {
   constructor(
@@ -35,15 +35,14 @@ export class ProductController {
 
   @AutoAudit()
   @Post()
-  create(@Body() createDto: CreateProductDto) {
-    return this.productService.create(createDto);
+  @UseGuards(AuthGuard('jwt'))
+  create(@Body() createDto: CreateProductDto, @GetUser() user: { userId: string }) {
+    console.log('Empleado extraído del token:', user.userId);
+    return this.productService.create(createDto, user.userId);
   }
 
   @Get('search')
-  async searchProducts(
-    @Query('query') query: string,
-    @Query('color') color?: string,
-  ) {
+  async searchProducts(@Query('query') query: string, @Query('color') color?: string) {
     if (!query || query.trim() === '') {
       throw new BadRequestException('El parámetro "query" es obligatorio para la búsqueda.');
     }

@@ -56,6 +56,18 @@ export class SizeService {
       throw new NotFoundException(`Size with id ${id} not found`);
     }
 
+    const existing = await this.sizeRepository.findOne({
+      where: {
+        size_us: updateDto.size_us,
+        size_eur: updateDto.size_eur,
+        size_cm: updateDto.size_cm,
+      },
+    });
+
+    if (existing) {
+      throw new BadRequestException(`This size already exists`);
+    }
+
     await this.sizeRepository.update(id, updateDto);
     return { message: `Size with id ${id} updated successfully` };
   }

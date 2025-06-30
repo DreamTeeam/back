@@ -39,6 +39,7 @@ import { VariantSize } from 'src/modules/variantSIzes/entities/variantSizes.enti
 import { Color } from 'src/catalogues/colorProduct/entities/colorProduct.entity';
 import { CancellationReason } from 'src/catalogues/cancellationReason/entities/cancellation-reason.entity';
 import { MembershipStatus } from '../../catalogues/MembershipStatus/entities/membership-status.entity';
+import { Notification } from 'src/modules/notifications/entities/notification.entity';
 
 //? Entidades Pia
 import { Shipment } from 'src/modules/shipments/entities/shipment.entity';
@@ -137,6 +138,7 @@ export class TenantConnectionService implements OnModuleDestroy {
         CancellationReason,
         VariantSize,
         Color,
+        Notification,
 
         //? Entidades Pia
         Audit,

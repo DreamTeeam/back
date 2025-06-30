@@ -97,6 +97,26 @@ export class BrandService {
       where: { id },
     });
     if (!exists) throw new NotFoundException(`Brand with id ${id} not found`);
+
+    if (updateDto.name) {
+    updateDto.name = updateDto.name.trim().toLowerCase();
+    const nameExists = await this.brandRepository.findOne({
+      where: { name: updateDto.name },
+    });
+    if (nameExists && nameExists.id !== id) {
+      throw new BadRequestException(`Brand name "${updateDto.name}" already exists`);
+    }
+  }
+
+  if (updateDto.key) {
+    updateDto.key = updateDto.key.trim().toLowerCase();
+    const keyExists = await this.brandRepository.findOne({
+      where: { key: updateDto.key },
+    });
+    if (keyExists && keyExists.id !== id) {
+      throw new BadRequestException(`Brand key "${updateDto.key}" already exists`);
+    }
+  }
     await this.brandRepository.update(id, updateDto);
     return { message: `Brand with id ${id} updated successfully` };
   }

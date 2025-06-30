@@ -19,7 +19,7 @@ import { Brand } from 'src/catalogues/brand/entities/brand.entity';
 import { Employee } from 'src/modules/users/entities/employee.entity';
 import { Size } from 'src/catalogues/sizeProduct/entities/size-product.entity';
 import { InjectTenantRepository } from 'src/common/typeorm-tenant-repository/tenant-repository.decorator';
-import { slugify } from '../../utils/slugify'; //NACHOimport { slugify } from '../../utils/slugify'; //NACHO
+import { slugify } from '../../utils/slugify'; //NACHO
 
 @Injectable()
 export class ProductService {
@@ -31,8 +31,7 @@ export class ProductService {
     @InjectTenantRepository(Color)
     private readonly colorRepository: Repository<Color>,
     @InjectTenantRepository(SubCategory)
-    private readonly subCategoryRepository: Repository<SubCategory>, // NACHO
-    @InjectTenantRepository(SubCategory)
+    private readonly subCategoryRepository: Repository<SubCategory>,
     private readonly variantService: ProductVariantService,
     private readonly dataSource: DataSource,
   ) {}
@@ -41,13 +40,24 @@ export class ProductService {
     return this.productRepository.save(data);
   }
 
-  async create(createDto: CreateProductDto): Promise<any> {
+  async create(createDto: CreateProductDto, userId: string): Promise<any> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
       const { variants, ...productData } = createDto;
+
+      delete (productData as any).employee_id;
+
+      const employee = await queryRunner.manager.findOne(Employee, {
+      where: { user: { id: userId } },
+      relations: ['user'], // para que funcione correctamente
+    });
+
+    if (!employee) {
+      throw new NotFoundException('No employee found for this user');
+    }
 
       const existing = await queryRunner.manager.findOne(Product, {
         where: [{ code: productData.code }, { name: productData.name }],
@@ -70,9 +80,6 @@ export class ProductService {
       const brand = await queryRunner.manager.findOneBy(Brand, {
         id: productData.brand_id,
       });
-      // const employee = await queryRunner.manager.findOneBy(Employee, {
-      //   id: productData.employee_id,
-      // });
 
       if (!category || !subCategory || !brand) {
         throw new NotFoundException(
@@ -80,7 +87,6 @@ export class ProductService {
             !category && 'category',
             !subCategory && 'subCategory',
             !brand && 'brand',
-            // !employee && 'employee',
           ]
             .filter(Boolean)
             .join(', ')}`,
@@ -98,6 +104,7 @@ export class ProductService {
       const product = queryRunner.manager.create(Product, {
         ...productData,
         slug, // NACHO
+        employee,
       });
       const savedProduct = await queryRunner.manager.save(product);
 
@@ -130,8 +137,10 @@ export class ProductService {
               );
             }
 
-            if (vs.stock <= 0) {
-              throw new BadRequestException('Stock must be greater than 0');
+            if (vs.stock <= 0 || vs.stock > 10000) {
+              throw new BadRequestException(
+                'Stock must be between 1 and 10,000 units',
+              );
             }
 
             const variantSize = queryRunner.manager.create(VariantSize, {
@@ -203,7 +212,7 @@ export class ProductService {
 
   async update(
     id: string,
-    productData: UpdateProductDto,
+    updateDto: UpdateProductDto,
   ): Promise<{ message: string; updatedProduct: Product }> {
     const product = await this.productRepository.findOneBy({ id });
 
@@ -211,21 +220,35 @@ export class ProductService {
       throw new NotFoundException(`Product with id ${id} not found`);
     }
 
-    const existing = await this.productRepository.findOne({
-      where: [{ code: productData.code }, { name: productData.name }],
-    });
+    if (updateDto.name && updateDto.name !== product.name) {
+      const nameExists = await this.productRepository.findOne({
+        where: { name: updateDto.name },
+      });
 
-    if (existing) {
-      throw new BadRequestException(
-        `Product already exists with ${
-          existing.code === productData.code ? 'code' : 'name'
-        }: ${existing.code === productData.code ? productData.code : productData.name}`,
-      );
+      if (nameExists && nameExists.id !== id) {
+        throw new BadRequestException(
+          `Product name "${updateDto.name}" already exists`,
+        );
+      }
+
+      updateDto.slug = slugify(updateDto.name);
+    }
+
+    if (updateDto.code && updateDto.code !== product.code) {
+      const codeExists = await this.productRepository.findOne({
+        where: { code: updateDto.code },
+      });
+
+      if (codeExists && codeExists.id !== id) {
+        throw new BadRequestException(
+          `Product code "${updateDto.code}" already exists`,
+        );
+      }
     }
 
     const updatedProduct = await this.productRepository.save({
       ...product,
-      ...productData,
+      ...updateDto,
     });
 
     return {

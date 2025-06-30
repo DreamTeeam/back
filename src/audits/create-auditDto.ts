@@ -1,13 +1,24 @@
-import { IsUUID, IsNotEmpty, IsString, IsOptional } from 'class-validator';
+
+import { IsUUID, IsNotEmpty } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateAuditDto {
+  @ApiProperty({ example: 'Cierre de caja del turno tarde' })
   @IsNotEmpty()
   description: string;
 
-  @IsNotEmpty()
-  totalCash: number;
+  // @ApiProperty({ example: 15000.5 })
+  // @IsNotEmpty()
+  // totalCash: number;
 
-  @IsUUID()
-  @IsOptional()
-  employeeId?: string;
+  // @ApiProperty({ example: 'f4a93f98-4a4d-4d98-8e6a-1b8768d7bd5a' })
+  // @IsUUID()
+  // @IsNotEmpty()
+  // employeeId: string;
 }
+
+
+
+
+
+

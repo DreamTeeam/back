@@ -13,7 +13,7 @@ import { Audit } from '../audits/audit.entity';
 
 @Entity('tw_cortes')
 export class Cut {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn('uuid', { name: 'id_corte' })
   id: string;
 
   @Column({ name: 'd_fecha_corte', type: 'date' })

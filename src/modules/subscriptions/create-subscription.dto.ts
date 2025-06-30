@@ -23,9 +23,6 @@ export class CreateSubscriptionDto {
   @IsIn(['customer', 'client'])
   context: 'customer' | 'client';
 
-  @IsOptional()
-  customer_id?: string;
-
   @IsString()
   @IsOptional()
   first_name?: string;

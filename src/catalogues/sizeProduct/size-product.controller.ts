@@ -7,6 +7,7 @@ import {
   Patch,
   Delete,
   ParseUUIDPipe,
+  Put,
 } from '@nestjs/common';
 import { SizeService } from './size-product.service';
 import { CreateSizeDto } from './dto/create-size.dto';
@@ -33,7 +34,7 @@ export class SizeController {
     return this.sizeService.findOne(id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateDto: UpdateSizeDto,

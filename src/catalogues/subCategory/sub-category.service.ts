@@ -115,6 +115,18 @@ export class SubCategoryService {
     const exists = await this.subCategoryRepository.findOneBy({ id });
     if (!exists)
       throw new NotFoundException(`SubCategory with id ${id} not found`);
+
+    const existing = await this.subCategoryRepository.findOne({
+      where: [{ name: updateDto.name }, { key: updateDto.key }],
+    });
+
+    if (existing) {
+      throw new BadRequestException(
+        `Subcategory alredy exist with ${
+          existing.name === updateDto.name ? 'name' : 'key'
+        }: ${existing.name === updateDto.name ? updateDto.name : updateDto.key}`,
+      );
+    }
     await this.subCategoryRepository.update(id, updateDto);
     return { message: `SubCategory with id ${id} updated successfully` };
   }

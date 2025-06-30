@@ -31,7 +31,7 @@ export class Category {
   })
   image: string;
 
-  @Column('varchar', { //NACHO
+    @Column('varchar', { //NACHO
   length: 120,
   unique: true,
   })

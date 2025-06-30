@@ -123,6 +123,7 @@ export class ChatGateway
       `Cliente ${client.data.userName || client.id} uniéndose a la sala ${tenantRoom}`,
     );
     client.join(tenantRoom);
+    client.emit('joined_room', { room: room });
   }
 
   @SubscribeMessage('event_message')
