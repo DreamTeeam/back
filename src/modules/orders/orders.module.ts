@@ -9,6 +9,7 @@ import { OrderDetail } from './entities/orderDetail.entity';
 import { ProductModule } from '../products/product.module';
 import { CancellationModule } from '../cancellation/cancellation.module';
 import { TenantTypeOrmModule } from '../../common/typeorm-tenant-repository/tenant-repository.provider';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { TenantTypeOrmModule } from '../../common/typeorm-tenant-repository/tena
     SubscriptionsModule,
     ProductModule,
     CancellationModule,
+    NotificationsModule,
   ],
   controllers: [OrdersController],
   providers: [
@@ -25,7 +27,7 @@ import { TenantTypeOrmModule } from '../../common/typeorm-tenant-repository/tena
       useClass: OrdersService,
       scope: Scope.REQUEST, // <-- ¡CAMBIO CRÍTICO AQUÍ!
     },
-  ],
+],
   exports: [OrdersService],
 })
 export class OrdersModule {}

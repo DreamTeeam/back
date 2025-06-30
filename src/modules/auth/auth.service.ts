@@ -19,6 +19,10 @@ import { Client } from '../users/entities/client.entity';
 import { Role } from '../roles/entities/role.entity';
 import { TenantConnectionService } from '../../common/tenant-connection/tenant-connection.service';
 import { getTenantContext } from '../../common/context/tenant-context';
+import { NotificationsService } from '../notifications/notifications.service'; //Steven
+import { instanceToPlain } from 'class-transformer';
+
+
 
 @Injectable()
 export class AuthService {
@@ -27,6 +31,7 @@ export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly tenantConnectionService: TenantConnectionService,
+    private readonly notificationsService: NotificationsService, //Steven
   ) {}
 
   // --- 🔧 Métodos utilitarios para obtener repositorios dinámicos ---
@@ -86,6 +91,8 @@ export class AuthService {
       );
     }
 
+     await this.notificationsService.notifyWelcome(user.employee, 'employee'); //Steven
+
     const payload = this.createJwtPayload(user);
     return this.jwtService.sign(payload);
   }
@@ -127,7 +134,14 @@ export class AuthService {
         const newClient = clientRepo.create({ user: newUser });
         const savedClient = await clientRepo.save(newClient);
         user = savedClient.user;
-      }
+      
+        //Steven
+      await this.notificationsService.notifyWelcome(
+          savedClient,
+          'client',
+          manager,
+        ); //Steven
+      };
 
       if (!user)
         throw new InternalServerErrorException(
@@ -168,6 +182,13 @@ export class AuthService {
     const isPasswordMatching = await bcrypt.compare(password, user.password);
     if (!isPasswordMatching) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+
+     // 🔔 Notificación de login //Steven
+    if (userType === 'employee') {
+      await this.notificationsService.notifyLogin(user.employee, 'employee');
+    } else {
+      await this.notificationsService.notifyLogin(user.client, 'client');
     }
 
     return user;
@@ -258,17 +279,33 @@ export class AuthService {
           roles: rolesToAssign 
         });
         
-        await employeeRepo.save(newEmployee);
+            const savedEmployee = await employeeRepo.save(newEmployee);
+
+        await this.notificationsService.notifyWelcome(
+          savedEmployee,
+          'employee',
+          manager,
+        ); //Steven
+
+        return savedEmployee.user;
+
+        
 
       } else {
         const clientRepo = manager.getRepository(Client);
         newUser = userRepo.create({ ...dto, password: hashedPassword });
 
         const newClient = clientRepo.create({ user: newUser });
-        await clientRepo.save(newClient);
-      }
-      
+        const savedClient = await clientRepo.save(newClient);
+
+        await this.notificationsService.notifyWelcome(
+          savedClient,
+          'client',
+          manager,
+        ); //Steven
+
       return newUser;
+    }
     });
   }
 }

@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ILike, In, IsNull, Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -20,6 +20,7 @@ import { Employee } from 'src/modules/users/entities/employee.entity';
 import { Size } from 'src/catalogues/sizeProduct/entities/size-product.entity';
 import { InjectTenantRepository } from 'src/common/typeorm-tenant-repository/tenant-repository.decorator';
 import { slugify } from '../../utils/slugify'; //NACHO
+
 @Injectable()
 export class ProductService {
   constructor(
@@ -30,7 +31,7 @@ export class ProductService {
     @InjectTenantRepository(Color)
     private readonly colorRepository: Repository<Color>,
     @InjectTenantRepository(SubCategory)
-    private readonly subCategoryRepository: Repository<SubCategory>, // NACHO
+    private readonly subCategoryRepository: Repository<SubCategory>,
     private readonly variantService: ProductVariantService,
     private readonly dataSource: DataSource,
   ) {}
@@ -39,13 +40,24 @@ export class ProductService {
     return this.productRepository.save(data);
   }
 
-  async create(createDto: CreateProductDto): Promise<any> {
+  async create(createDto: CreateProductDto, userId: string): Promise<any> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
       const { variants, ...productData } = createDto;
+
+      delete (productData as any).employee_id;
+
+      const employee = await queryRunner.manager.findOne(Employee, {
+      where: { user: { id: userId } },
+      relations: ['user'], // para que funcione correctamente
+    });
+
+    if (!employee) {
+      throw new NotFoundException('No employee found for this user');
+    }
 
       const existing = await queryRunner.manager.findOne(Product, {
         where: [{ code: productData.code }, { name: productData.name }],
@@ -68,9 +80,6 @@ export class ProductService {
       const brand = await queryRunner.manager.findOneBy(Brand, {
         id: productData.brand_id,
       });
-      const employee = await queryRunner.manager.findOneBy(Employee, {
-        id: productData.employee_id,
-      });
 
       if (!category || !subCategory || !brand) {
         throw new NotFoundException(
@@ -78,7 +87,6 @@ export class ProductService {
             !category && 'category',
             !subCategory && 'subCategory',
             !brand && 'brand',
-            !employee && 'employee',
           ]
             .filter(Boolean)
             .join(', ')}`,
@@ -96,6 +104,7 @@ export class ProductService {
       const product = queryRunner.manager.create(Product, {
         ...productData,
         slug, // NACHO
+        employee,
       });
       const savedProduct = await queryRunner.manager.save(product);
 
@@ -128,8 +137,10 @@ export class ProductService {
               );
             }
 
-            if (vs.stock <= 0) {
-              throw new BadRequestException('Stock must be greater than 0');
+            if (vs.stock <= 0 || vs.stock > 10000) {
+              throw new BadRequestException(
+                'Stock must be between 1 and 10,000 units',
+              );
             }
 
             const variantSize = queryRunner.manager.create(VariantSize, {
@@ -147,12 +158,7 @@ export class ProductService {
 
       const productWithVariants = await this.productRepository.findOne({
         where: { id: savedProduct.id },
-        relations: [
-          'variants',
-          'variants.color',
-          'variants.variantSizes',
-          'variants.variantSizes.size',
-        ],
+        relations: ['variants', 'variants.color', 'variants.variantSizes.size'],
       });
 
       return instanceToPlain(productWithVariants);
@@ -180,8 +186,8 @@ export class ProductService {
         'category',
         'subCategory',
         'brand',
-        'variants',
-        'variants.variantSizes',
+        'variants.color',
+        'variants.variantSizes.size',
       ],
     });
     return instanceToPlain(products);
@@ -194,46 +200,14 @@ export class ProductService {
         'category',
         'subCategory',
         'brand',
-        'variants',
-        'variants.variantSizes',
+        'variants.color',
+        'variants.variantSizes.size',
       ],
     });
     if (!product) {
       throw new NotFoundException(`Product with id ${id} not found`);
     }
     return instanceToPlain(product);
-  }
-
-  async searchProducts(query: string, color: string): Promise<any> {
-    if (!query || query.trim() === '') {
-      throw new BadRequestException('There are no results for your search');
-    }
-
-    const products = await this.productRepository
-      .createQueryBuilder('product')
-      .leftJoinAndSelect('product.category', 'category')
-      .leftJoinAndSelect('product.subCategory', 'subCategory')
-      .leftJoinAndSelect('product.brand', 'brand')
-      .leftJoinAndSelect('product.variants', 'variants')
-      .leftJoinAndSelect('variants.color', 'color')
-      .leftJoinAndSelect('variants.variantSizes', 'variantSizes')
-      .leftJoinAndSelect('variantSizes.size', 'size')
-      .where('brand.name ILIKE :query', { query: `%${query}%` })
-      // .orWhere('product.description ILIKE :query', { query: `%${query}%` })
-      // .orWhere('product.code ILIKE :query', { query: `%${query}%` })
-      // .orWhere('category.name ILIKE :query', { query: `%${query}%` })
-      // .orWhere('subCategory.name ILIKE :query', { query: `%${query}%` })
-      // .orWhere('brand.name ILIKE :brand', { brand: `%${query}%` })
-      // .orWhere('variants.description ILIKE :query', { query: `%${query}%` })
-      // .andWhere('color.color ILIKE :color', { color: `%${color}%` })  // NACHO
-      // .orWhere('size.size_us::text ILIKE :query', { query: `%${query}%` })
-      // .orWhere('size.size_eur::text ILIKE :query', { query: `%${query}%` })
-      // .orWhere('size.size_cm::text ILIKE :query', { query: `%${query}%` })
-      // .orWhere('product.sale_price::text ILIKE :query', { query: `%${query}%` })
-      .take(50)
-      .getMany();
-
-    return instanceToPlain(products);
   }
 
   async update(
@@ -244,6 +218,32 @@ export class ProductService {
 
     if (!product) {
       throw new NotFoundException(`Product with id ${id} not found`);
+    }
+
+    if (updateDto.name && updateDto.name !== product.name) {
+      const nameExists = await this.productRepository.findOne({
+        where: { name: updateDto.name },
+      });
+
+      if (nameExists && nameExists.id !== id) {
+        throw new BadRequestException(
+          `Product name "${updateDto.name}" already exists`,
+        );
+      }
+
+      updateDto.slug = slugify(updateDto.name);
+    }
+
+    if (updateDto.code && updateDto.code !== product.code) {
+      const codeExists = await this.productRepository.findOne({
+        where: { code: updateDto.code },
+      });
+
+      if (codeExists && codeExists.id !== id) {
+        throw new BadRequestException(
+          `Product code "${updateDto.code}" already exists`,
+        );
+      }
     }
 
     const updatedProduct = await this.productRepository.save({
@@ -300,7 +300,7 @@ export class ProductService {
     const belongsToCategory = subCategory.categories.some(
       (cat) => cat.slug === categorySlug,
     );
-    
+
     if (!belongsToCategory) {
       throw new BadRequestException(
         'Esa subcategoría no pertenece a la categoría indicada',

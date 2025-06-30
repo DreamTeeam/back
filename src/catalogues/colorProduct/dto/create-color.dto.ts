@@ -8,4 +8,9 @@ export class CreateColorDto {
   @IsNotEmpty()
   @Transform(({ value }) => value?.trim().toLowerCase())
   color: string;
+
+  @ApiProperty({ example: '#000000' })
+  @IsString()
+  @IsNotEmpty()
+  hexCode: string;
 }

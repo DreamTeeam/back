@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -11,6 +12,7 @@ import {
   Res,
   UploadedFile,
   UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -20,26 +22,34 @@ import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
 import { ProductsCsvService } from './csv/product-csv.service';
-import { Response } from 'express';
+import { Response } from 'express';import { ProductSearchService } from './searchProducts.service';
+import { GetUser } from '../auth/decorators/get-user.decorator';
+import { Employee } from '../users/entities/employee.entity';
+import { AuthGuard } from '@nestjs/passport';
+
 @Controller('products')
 export class ProductController {
   constructor(
+    
     private readonly productService: ProductService,
     private readonly csvService: ProductsCsvService,
+    private readonly productSearchService: ProductSearchService,
   ) {}
 
   @AutoAudit()
   @Post()
-  create(@Body() createDto: CreateProductDto) {
-    return this.productService.create(createDto);
+  @UseGuards(AuthGuard('jwt'))
+  create(@Body() createDto: CreateProductDto, @GetUser() user: { userId: string }) {
+    console.log('Empleado extraído del token:', user.userId);
+    return this.productService.create(createDto, user.userId);
   }
 
   @Get('search')
-  async searchProducts(
-    @Query('query') query: string,
-    @Query('color') color: string,
-  ) {
-    return this.productService.searchProducts(query, color);
+  async searchProducts(@Query('query') query: string, @Query('color') color?: string) {
+    if (!query || query.trim() === '') {
+      throw new BadRequestException('El parámetro "query" es obligatorio para la búsqueda.');
+    }
+    return this.productSearchService.searchProducts(query, color);
   }
 
   @Get()

@@ -18,6 +18,9 @@ export class Color {
   @Column({ type: 'varchar', length: 100, unique: true })
   color: string;
 
+  @Column({ type: 'varchar', length: 10, unique: true })
+  hexCode: string;
+
   @OneToMany(() => ProductVariant, (variant) => variant.color)
   productVariants: ProductVariant[];
 
