@@ -53,6 +53,19 @@ export class Audit {
   @Column({ name: 't_hora_arqueo', type: 'time' })
   time: string;
 
+  //AGREGO
+  @Column({ name: 'n_cantidad_gastos', type: 'int', nullable: true })
+expense_count: number;
+
+@Column({
+  name: 'n_total_gastos',
+  type: 'decimal',
+  precision: 10,
+  scale: 2,
+  nullable: true,
+})
+total_expenses: number;
+
  // @Column({ name: 'id_empleado', type: 'int' })
  //readonly employeeId: number;
   

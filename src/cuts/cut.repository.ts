@@ -22,10 +22,46 @@ export class CutRepository {
     return this.auditRepo.find({ where: { cut: IsNull() } });
   }
 
-  createCut(data: Partial<Cut>) {
-    const newCut = this.cutRepo.create(data);
-    return this.cutRepo.save(newCut);
-  }
+  // createCut(data: Partial<Cut>) {
+  //   const newCut = this.cutRepo.create(data);
+  //   return this.cutRepo.save(newCut);
+  // }
+
+  async createCut(data: { description: string; employee_id: string }) {
+  const audits = await this.getUnassignedAudits();
+
+  const audit_count = audits.length;
+  const total_audits = audits.reduce((sum, a) => sum + Number(a.total_cash || 0), 0);
+  const sale_count = audits.reduce((sum, a) => sum + (a.sale_count || 0), 0);
+  const total_cash_sales = audits.reduce((sum, a) => sum + Number(a.total_cash_sales || 0), 0);
+  const expense_count = audits.reduce((sum, a) => sum + (a.expense_count || 0), 0);
+  const total_expenses = audits.reduce((sum, a) => sum + Number(a.total_expenses || 0), 0);
+
+  const now = new Date();
+  const date = now.toISOString().split('T')[0];       // YYYY-MM-DD
+  const time = now.toTimeString().split(' ')[0];       // HH:mm:ss
+
+  const newCut = this.cutRepo.create({
+    description: data.description,
+    employee_id: data.employee_id,
+    audit_count,
+    total_audits,
+    sale_count,
+    total_cash_sales,
+    expense_count,
+    total_expenses,
+    date,
+    time,
+  });
+
+  const savedCut = await this.cutRepo.save(newCut);
+
+  const auditIds = audits.map((a) => a.id);
+  await this.assignAuditsToCut(auditIds, savedCut.id);
+
+  return savedCut;
+}
+
 
   assignAuditsToCut(auditIds: string[], cutId: string) {
     return Promise.all(
