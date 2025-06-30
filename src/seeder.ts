@@ -11,7 +11,7 @@ async function bootstrap() {
 
   const tenantConnectionService = appContext.get(TenantConnectionService);
 
-  const tenantIdsToSeed = ['44baf11d-a672-4f48-85b0-293e7b38b787']; // Tu ID de ejemplo
+  const tenantIdsToSeed = ['8a38e67c-62e6-42c7-acac-a2a30231dd5c']; // Tu ID de ejemplo
 
   try {
     console.log('Iniciando proceso de seeding...');

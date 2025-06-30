@@ -28,7 +28,7 @@ export const tenantDbConfigTemplate: PostgresConnectionOptions = {
     process.env.ENABLE_TENANT_SYNC === 'true',
 };
 
-//HACK --- Configuración para la Base de Datos MAESTRA ---
+//HACK --- Configuración para la Base de Datos MAESTRA --- Vamos a ZzzZ ?
 import { Customer } from '../master_data/customer/entities/customer.entity';
 import { CompanySubscription } from '../master_data/company_subscription/entities/company-subscription.entity';
 import { GlobalMembershipType } from '../master_data/global_membership_type/entities/global-membership-type.entity';
@@ -42,7 +42,7 @@ export const masterDbConfig: TypeOrmModuleOptions = {
   database: process.env.MASTER_DB_DATABASE || '',
   entities: [Customer, CompanySubscription, GlobalMembershipType], //! Solo las entidades de la DB Maestra
   dropSchema: false,
-  synchronize: false,
+  synchronize: true,
   name: 'masterConnection',
 };
 

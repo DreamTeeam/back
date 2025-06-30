@@ -163,7 +163,7 @@ export class AuthService {
 
     const relations =
       userType === 'employee'
-        ? { employee: { roles: true } }
+        ? { employee: { roles: true, user: true } } // STEVEN Y NACHO
         : { client: true };
 
     const user = await this.getUserRepository().findOne({
