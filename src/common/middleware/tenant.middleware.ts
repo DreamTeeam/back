@@ -36,6 +36,14 @@ export class TenantMiddleware implements NestMiddleware {
     //      throw new ForbiddenException('Tenant identifier not found in subdomain.');
     //    }
     // 2. Desde una cabecera HTTP personalizada (ej: X-Tenant-Id)
+
+    // V-- LA MODIFICACIÓN VA JUSTO AQUÍ, AL INICIO DE LA FUNCIÓN --V  //! esto lo agregue yo FLOR
+    // Si la solicitud es un preflight de CORS, la pasamos directamente sin procesar.
+    if (req.method === 'OPTIONS') {
+      return next();
+    }
+    // ^-- FIN DE LA MODIFICACIÓN --^
+
     let tenantIdentifier = req.headers['x-tenant-id'] as string;
     // 3. Desde el usuario autenticado (requiere que el guard de auth se ejecute ANTES)
     //    Si ya tienes un guard JWT que pone `user` en `req.user`, puedes hacer:

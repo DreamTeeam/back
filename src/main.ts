@@ -8,7 +8,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { rawBody: true });
   app.enableCors({
-    origin: ['https://nivoapp.vercel.app/', 'http://localhost:4000'],
+    origin: ['https://nivoapp.vercel.app/', 'http://localhost:4000', 'http://localhost:4000/'],
     credentials: true,
   });
 
@@ -31,6 +31,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
+      transform: true,
     }),
   );
 

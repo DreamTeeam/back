@@ -28,7 +28,15 @@ export class OrdersController {
 
   @Post()
   createOrder(@Body() createOrderDto: CreateOrderDto) {
-    return this.ordersService.processNewOrder(createOrderDto);
+    this.logger.log('--- ¡EL CONTROLADOR FUE ALCANZADO! ---');
+    this.logger.log('Payload recibido:', createOrderDto);
+
+    // Devolvemos una respuesta simple sin llamar al servicio
+    return {
+      message: 'El controlador /orders fue alcanzado exitosamente.',
+      data: createOrderDto,
+    };
+    //return this.ordersService.processNewOrder(createOrderDto);
   }
 
   @Get(':id')
