@@ -22,15 +22,18 @@ import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
 import { ProductsCsvService } from './csv/product-csv.service';
-import { Response } from 'express';
->>>>>>>>> Temporary merge branch 2
+import { Response } from 'express';import { ProductSearchService } from './searchProducts.service';
+import { GetUser } from '../auth/decorators/get-user.decorator';
+import { Employee } from '../users/entities/employee.entity';
+import { AuthGuard } from '@nestjs/passport';
+
 @Controller('products')
 export class ProductController {
   constructor(
     
     private readonly productService: ProductService,
-    private readonly productSearchService: ProductSearchService,
     private readonly csvService: ProductsCsvService,
+    private readonly productSearchService: ProductSearchService,
   ) {}
 
   @AutoAudit()
