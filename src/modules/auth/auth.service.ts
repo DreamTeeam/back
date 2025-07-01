@@ -170,6 +170,7 @@ export class AuthService {
       where: { email },
       relations,
     });
+    
  //agrego
  console.log('LOGIN DEBUG: usuario encontrado:', user);
     if (

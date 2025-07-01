@@ -4,7 +4,3 @@ import { ApiExtraModels } from '@nestjs/swagger';
 
 @ApiExtraModels(CreateCutDto)
 export class UpdateCutDto extends PartialType(CreateCutDto) {}
-
-
-
-

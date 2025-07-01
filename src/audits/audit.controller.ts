@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Param,
   Body,
   ParseIntPipe,
@@ -43,11 +44,11 @@ export class AuditController {
     return this.auditService.create(dto, req.user);
   }
 
-  @Put(':id')
+  @Patch(':id')
   @ApiOperation({ summary: 'Actualizar una auditoría por ID' })
-  @ApiParam({ name: 'id', type: Number })
+  @ApiParam({ name: 'id', description: 'El UUID de la auditoría', type: 'string' })
   @ApiBody({ type: UpdateAuditDto })
-  update(@Param('id', ParseIntPipe) id: string, @Body() dto: UpdateAuditDto) {
+  update(@Param('id') id: string, @Body() dto: UpdateAuditDto) {
     return this.auditService.update(id, dto);
   }
 

@@ -4,6 +4,7 @@ import { InjectTenantRepository } from '../common/typeorm-tenant-repository/tena
 import { Cut } from './cut.entity';
 import { Audit } from '../audits/audit.entity';
 import { Employee } from 'src/modules/users/entities/employee.entity';
+import { CreateCutDto } from './create-cutDto';
 
 @Injectable()
 export class CutRepository {
@@ -27,11 +28,11 @@ export class CutRepository {
   //   return this.cutRepo.save(newCut);
   // }
 
-  async createCut(data: { description: string; employee_id: string }) {
+  async createCut(data: CreateCutDto, employee: Employee) {
   const audits = await this.getUnassignedAudits();
 
   const audit_count = audits.length;
-  const total_audits = audits.reduce((sum, a) => sum + Number(a.total_cash || 0), 0);
+  const total_audits = audits.reduce((sum, a) => sum + Number(a.total_cash_sales || 0) + Number(a.total_card_sales || 0), 0,);
   const sale_count = audits.reduce((sum, a) => sum + (a.sale_count || 0), 0);
   const total_cash_sales = audits.reduce((sum, a) => sum + Number(a.total_cash_sales || 0), 0);
   const expense_count = audits.reduce((sum, a) => sum + (a.expense_count || 0), 0);
@@ -43,7 +44,7 @@ export class CutRepository {
 
   const newCut = this.cutRepo.create({
     description: data.description,
-    employee_id: data.employee_id,
+    employee: employee,
     audit_count,
     total_audits,
     sale_count,
@@ -87,4 +88,11 @@ export class CutRepository {
   softDelete(id: string) {
     return this.cutRepo.softDelete(id);
   }
+
+async getAuditsByCut(cutId: string) {
+  return this.auditRepo.find({
+    where: { cut: { id: cutId } },
+  });
+  }
+
 }

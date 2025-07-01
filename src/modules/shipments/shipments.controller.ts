@@ -70,13 +70,6 @@ export class ShipmentsController {
     return this.shipmentsService.update(id, dto);
   }
 
-  @Delete(':id')
-  @ApiOperation({ summary: 'Eliminar un embarque por ID' })
-  @ApiParam({ name: 'id', type: Number })
-  remove(@Param('id', ParseIntPipe) id: string) {
-    return this.shipmentsService.remove(id);
-  }
-
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @Get('csv/from-db')

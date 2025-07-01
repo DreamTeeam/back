@@ -43,7 +43,6 @@ export class CutsController {
   @ApiOperation({ summary: 'Crear un corte' })
   @ApiBody({ type: CreateCutDto })
   create(@Body() dto: CreateCutDto, @Req() req: AuthRequest) {
-
     return this.cutsService.create(dto, req.user);
   }
 
@@ -55,38 +54,30 @@ export class CutsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un corte por ID' })
-  @ApiParam({ name: 'id', type: Number })
+  @ApiParam({ name: 'id', description: 'El UUID del corte', type: 'string' })
   findOne(@Param('id', ParseIntPipe) id: string) {
     return this.cutsService.findOne(id);
   }
 
+  @Get(':id/audits')
+  @ApiOperation({ summary: 'Obtener auditorías por corte' })
+  @ApiParam({ name: 'id', description: 'El UUID del corte', type: 'string' })
+  getAuditsByCut(@Param('id') cutId: string) {
+    return this.cutsService.getAuditsByCut(cutId);
+  }
+
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un corte por ID' })
-  @ApiParam({ name: 'id', type: Number })
+  @ApiParam({ name: 'id', description: 'El UUID del corte', type: 'string' })
   @ApiBody({ type: UpdateCutDto })
-  update(@Param('id', ParseIntPipe) id: string, @Body() dto: UpdateCutDto) {
+  update(@Param('id') id: string, @Body() dto: UpdateCutDto) {
     return this.cutsService.update(id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar un corte por ID' })
-  @ApiParam({ name: 'id', type: Number })
+  @ApiParam({ name: 'id', description: 'El UUID del corte', type: 'string' })
   remove(@Param('id', ParseIntPipe) id: string) {
     return this.cutsService.remove(id);
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -40,33 +40,11 @@ export class AuditRepository {
     return { cash, card };
   }
 
-  // async createAuditWithOrders(
-  //   auditData: Partial<Audit>,
-  //   orders: Order[],
-  // ): Promise<Audit> {
-  //   const audit = this.auditRepo.create(auditData);
-  //   const savedAudit = await this.auditRepo.save(audit);
-
-  //   await Promise.all(
-  //     orders.map((o) => this.orderRepo.update(o.id, { audit: savedAudit })),
-  //   );
-
-  //   return savedAudit;
-  // }
-
   async createAuditWithOrders(
     auditData: Partial<Audit>,
     orders: Order[],
   ): Promise<Audit> {
-    const { cash, card } = this.calculateSalesTotals(orders);
-
-    const audit = this.auditRepo.create({
-      ...auditData,
-      total_cash_sales: cash,
-      total_card_sales: card,
-      total_cash: cash + card,
-      sale_count: orders.length,
-    });
+    const audit = this.auditRepo.create(auditData);
 
     const savedAudit = await this.auditRepo.save(audit);
 

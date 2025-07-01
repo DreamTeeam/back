@@ -32,7 +32,6 @@ export class Audit {
   })
   total_card_sales: number;
 
-
   @Column({ name: 'n_cantidad_ventas', type: 'int' })
   sale_count: number;
 
@@ -55,23 +54,20 @@ export class Audit {
 
   //AGREGO
   @Column({ name: 'n_cantidad_gastos', type: 'int', nullable: true })
-expense_count: number;
+  expense_count: number;
 
-@Column({
-  name: 'n_total_gastos',
-  type: 'decimal',
-  precision: 10,
-  scale: 2,
-  nullable: true,
-})
-total_expenses: number;
+  @Column({
+    name: 'n_total_gastos',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+  })
+  total_expenses: number;
 
- // @Column({ name: 'id_empleado', type: 'int' })
- //readonly employeeId: number;
-  
-   @ManyToOne(() => Employee, { eager: true })
-   @JoinColumn({ name: 'id_empleado' })
-   employee: Employee | string;
+  @ManyToOne(() => Employee, { eager: true })
+  @JoinColumn({ name: 'id_empleado' })
+  employee: Employee | string;
 
   @ManyToOne(() => Cut, (cut) => cut.audits, { nullable: true })
   @JoinColumn({ name: 'id_corte' })

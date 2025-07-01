@@ -30,6 +30,12 @@ export class OrdersController {
     return this.ordersService.processNewOrder(createOrderDto);
   }
 
+  @Get('my') // NACHO
+  @UseGuards(AuthGuard('jwt'))
+  getMyOrders(@GetUser() employee: Employee) {
+    return this.ordersService.findByEmployee(employee.id);
+  }
+
   @Get(':id')
   findOrderById(@Param('id', ParseUUIDPipe) id: string) {
     return this.ordersService.findOneById(id);
