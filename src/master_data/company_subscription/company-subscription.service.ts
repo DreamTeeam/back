@@ -22,30 +22,6 @@ export class CompanySubscriptionService {
     private readonly customerService: CustomerService,
   ) {}
 
-  async createCheckoutSessionForCustomer(dto: {
-    email: string;
-    price_id: string;
-    name?: string;
-  }) {
-    const { email, price_id, name } = dto;
-    const customerName = name || email;
-
-    const stripeCustomer = await this.stripeService.findOrCreateCustomer(
-      email,
-      customerName,
-    );
-
-    const session = await this.stripeService.createSubscriptionCheckoutSession(
-      stripeCustomer.id,
-      price_id,
-      'http://localhost:4000/subscripton_payment/success',
-      'http://localhost:4000/subscripton_payment/cancelled',
-      { context: 'customer' },
-    );
-
-    return { checkoutUrl: session.url };
-  }
-
   async handleCompanyWebhook(event: Stripe.Event) {
     this.logger.debug(`[Company Webhook] Procesando evento: "${event.type}"`);
     switch (event.type) {
@@ -83,14 +59,14 @@ export class CompanySubscriptionService {
 
   findAll(): Promise<CompanySubscription[]> {
     return this.companySubscriptionRepository.find({
-      relations: ['customer', 'membership_typeid'], //* corregido. PREGUNTAR:  aca la relation no deberia ser con globalMembershipType?
+      relations: ['customer', 'membership_type'], //* corregido. PREGUNTAR:  aca la relation no deberia ser con globalMembershipType?
     });
   }
 
   async findOne(id: string): Promise<CompanySubscription> {
     const subscription = await this.companySubscriptionRepository.findOne({
       where: { id },
-      relations: ['customer', 'membership_typeid'], //* corregido. PREGUNTAR:  aca la relation no deberia ser con globalMembershipType?
+      relations: ['customer', 'membership_type'], //* corregido. PREGUNTAR:  aca la relation no deberia ser con globalMembershipType?
     });
     if (!subscription) {
       throw new NotFoundException(
@@ -115,7 +91,7 @@ export class CompanySubscriptionService {
     return this.companySubscriptionRepository.findOne({
       where: { customer_id: customerId, status: 'active' },
       order: { end_date: 'DESC' },
-      relations: ['membership_typeid'],
+      relations: ['membership_type'],
     });
   }
 
@@ -127,7 +103,7 @@ export class CompanySubscriptionService {
     await this.companySubscriptionRepository.update(id, updateDto);
     return this.companySubscriptionRepository.findOne({
       where: { id },
-      relations: ['customer', 'membershipType'],
+      relations: ['customer', 'membership_type'],
     });
   }
 
@@ -275,3 +251,27 @@ export class CompanySubscriptionService {
     }
   }
 }
+
+// async createCheckoutSessionForCustomer(dto: {
+//   email: string;
+//   price_id: string;
+//   name?: string;
+// }) {
+//   const { email, price_id, name } = dto;
+//   const customerName = name || email;
+
+//   const stripeCustomer = await this.stripeService.findOrCreateCustomer(
+//     email,
+//     customerName,
+//   );
+
+//   const session = await this.stripeService.createSubscriptionCheckoutSession(
+//     stripeCustomer.id,
+//     price_id,
+//     'http://localhost:4000/subscripton_payment/success',
+//     'http://localhost:4000/subscripton_payment/cancelled',
+//     { context: 'customer' },
+//   );
+
+//   return { checkoutUrl: session.url };
+// }

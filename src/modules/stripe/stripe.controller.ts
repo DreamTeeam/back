@@ -17,6 +17,7 @@ import { OrdersService } from '../orders/orders.service'; // Mantener el import 
 import { CompanySubscriptionService } from 'src/master_data/company_subscription/company-subscription.service'; // Mantener el import para el tipo
 import { runInTenantContext } from '../../common/context/tenant-context';
 import { TenantConnectionService } from '../../common/tenant-connection/tenant-connection.service';
+import { CustomerService } from 'src/master_data/customer/customer.service';
 
 @Controller('stripe')
 export class StripeController {
@@ -26,6 +27,7 @@ export class StripeController {
     private readonly stripeService: StripeService,
     private readonly tenantConnectionService: TenantConnectionService,
     private readonly moduleRef: ModuleRef, // Inyectar ModuleRef
+    private readonly customerService: CustomerService,
   ) {}
 
   @Post('webhook')
@@ -228,7 +230,35 @@ export class StripeController {
         );
       }
     }
-
+    if (
+      !customerId &&
+      dataObject.customer &&
+      typeof dataObject.customer === 'string'
+    ) {
+      try {
+        const stripeCustomer = await this.stripeService.retrieveCustomer(
+          dataObject.customer,
+        );
+        if (stripeCustomer.email) {
+          this.logger.debug(
+            `Buscando customer por email: ${stripeCustomer.email} en la DB maestra.`,
+          );
+          const customerInDb = await this.customerService.findOneByEmail(
+            stripeCustomer.email,
+          );
+          if (customerInDb) {
+            this.logger.debug(
+              `Customer encontrado por email: ${customerInDb.id}`,
+            );
+            return customerInDb.id;
+          }
+        }
+      } catch (error) {
+        this.logger.warn(
+          `No se pudo resolver el customerId a través del email del cliente de Stripe: ${error.message}`,
+        );
+      }
+    }
     return customerId || null;
   }
 

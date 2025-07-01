@@ -117,6 +117,9 @@ export class StripeService {
       success_url: successUrl,
       cancel_url: cancelUrl,
       metadata: metadata,
+      subscription_data: {
+        metadata: metadata,
+      },
     });
   }
 

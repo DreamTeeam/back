@@ -25,15 +25,6 @@ export class CompanySubscriptionController {
     private readonly companySubscriptionService: CompanySubscriptionService,
   ) {}
 
-  @Post('checkout-session')
-  createCheckoutSession(
-    @Body() dto: { email: string; price_id: string; name?: string },
-  ) {
-    return this.companySubscriptionService.createCheckoutSessionForCustomer(
-      dto,
-    );
-  }
-
   @Post()
   // @Roles(Role.SuperAdmin)
   @HttpCode(HttpStatus.CREATED)
@@ -77,3 +68,12 @@ export class CompanySubscriptionController {
     return this.companySubscriptionService.remove(id);
   }
 }
+
+// @Post('checkout-session')
+// createCheckoutSession(
+//   @Body() dto: { email: string; price_id: string; name?: string },
+// ) {
+//   return this.companySubscriptionService.createCheckoutSessionForCustomer(
+//     dto,
+//   );
+// }

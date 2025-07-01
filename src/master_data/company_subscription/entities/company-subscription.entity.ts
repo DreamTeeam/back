@@ -49,17 +49,23 @@ export class CompanySubscription {
   payment_status: string; // paid, unpaid, past_due
 
   @CreateDateColumn({
+    name: 'created_at',
     type: 'timestamp without time zone',
     default: () => 'NOW()',
   })
   createdAt: Date;
 
   @UpdateDateColumn({
+    name: 'updated_at',
     type: 'timestamp without time zone',
     default: () => 'NOW()',
   })
   updatedAt: Date;
 
-  @DeleteDateColumn({ type: 'timestamp without time zone', nullable: true })
+  @DeleteDateColumn({
+    name: 'deleted_at',
+    type: 'timestamp without time zone',
+    nullable: true,
+  })
   deletedAt: Date;
 }
