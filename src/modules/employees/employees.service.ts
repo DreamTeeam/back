@@ -10,6 +10,7 @@ import { Employee } from '../users/entities/employee.entity';
 import { Role } from '../roles/entities/role.entity';
 import { UpdateEmployeeRolesDto } from './dto/update-employee-roles.dto';
 import { InjectTenantRepository } from 'src/common/typeorm-tenant-repository/tenant-repository.decorator';
+import { IdConverterService } from 'src/common/services/id-converter.service';
 
 @Injectable()
 export class EmployeesService {
@@ -18,13 +19,15 @@ export class EmployeesService {
     private readonly employeeRepository: Repository<Employee>,
     @InjectTenantRepository(Role)
     private readonly roleRepository: Repository<Role>,
+    private readonly idConverter: IdConverterService,
   ) {}
 
   async updateEmployeeRoles(id: string, updateDto: UpdateEmployeeRolesDto) {
     const { roleIds } = updateDto;
 
+    const trueEmployeeId = await this.idConverter.getEmployeeIdFromUserId(id)
     const employeeToUpdate = await this.employeeRepository.findOne({
-      where: { id },
+      where: { id: trueEmployeeId },
       relations: ['roles'],
     });
 

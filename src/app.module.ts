@@ -42,6 +42,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { SharedModule } from './common/services/shared.module';
 
 @Module({
   imports: [
@@ -93,6 +94,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     ShipmentsModule,
     CheckoutModule,
     DashboardModule,
+    SharedModule,
 
     //! MasterDataModule (usa la conexión 'masterConnection')
     ChatModule,

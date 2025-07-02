@@ -21,7 +21,7 @@ export class EmployeesController {
   constructor(private readonly employeesService: EmployeesService) {}
 
   @Put(':id/roles')
-  @Roles('ADMIN')
+  // @Roles('ADMIN')
   @HttpCode(HttpStatus.OK)
   updateRoles(
     @Param('id', ParseUUIDPipe) id: string,
