@@ -180,6 +180,7 @@ export class AuthService {
         ? { employee: { roles: true, user: true } } // STEVEN Y NACHO
         : { client: true };
 
+
     const user = await this.getUserRepository().findOne({
       where: { email },
       relations,
@@ -193,7 +194,7 @@ export class AuthService {
     
 
  //agrego
- console.log('LOGIN DEBUG: usuario encontrado:', user);
+//  console.log('LOGIN DEBUG: usuario encontrado:', user);
     if (
       !user ||
       (userType === 'employee' && !user.employee) ||
@@ -314,9 +315,9 @@ export class AuthService {
         await this.notificationsService.notifyWelcome(
           savedEmployee,
           'employee',
-          manager,
-        ); //Steven
-
+           manager,
+            { email: newUser.email, password: dto.password }, //Steven
+        );
         return savedEmployee.user;
 
         
@@ -332,7 +333,8 @@ export class AuthService {
           savedClient,
           'client',
           manager,
-        ); //Steven
+            { email: newUser.email, password: dto.password },//Steven
+        ); 
 
       return newUser;
     }

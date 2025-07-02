@@ -17,7 +17,6 @@ import { AutoAudit } from 'src/modules/auditModification/decorator/audit-log.dec
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
-  @AutoAudit()
   @Post()
   create(@Body() createDto: CreateCategoryDto) {
     return this.categoryService.create(createDto);

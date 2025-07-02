@@ -13,7 +13,8 @@ async function bootstrap() {
 
   const tenantIdsToSeed = ['8a38e67c-62e6-42c7-acac-a2a30231dd5c']; // Tu ID de ejemplo
   // const tenantIdsToSeed = ['5bcc8377-b205-4296-8207-e52ce3152cd5']; // Tu ID de ejemplo
-  
+  // const tenantIdsToSeed = ['34fa2d02-4a50-44ad-81cd-56834caedd74']; // Tu ID de ejemplo
+
   try {
     console.log('Iniciando proceso de seeding...');
 

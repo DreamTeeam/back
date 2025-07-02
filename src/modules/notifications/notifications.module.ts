@@ -13,10 +13,13 @@ import { NotificationsTestController } from './notifications.controller';
 import { MailerService } from './mailer/mailer.service';
 import { CompanySubscription } from 'src/master_data/company_subscription/entities/company-subscription.entity';
 import { TenantTypeOrmModule } from 'src/common/typeorm-tenant-repository/tenant-repository.provider';
+import { TenantConnectionModule } from 'src/common/tenant-connection/tenant-connection.module';
+import { masterDbConfig } from 'src/config/typeorm';
 
 @Module({
   imports: [
     TenantTypeOrmModule.forFeature([Notification, Membership, VariantSize, Order, CompanySubscription]),
+    TypeOrmModule.forFeature([CompanySubscription], 'masterConnection'),
     MailerModule.forRoot({
       transport: {
         service: 'gmail',

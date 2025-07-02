@@ -18,7 +18,6 @@ import { AutoAudit } from '../../modules/auditModification/decorator/audit-log.d
 export class SizeController {
   constructor(private readonly sizeService: SizeService) {}
 
-  @AutoAudit()
   @Post()
   create(@Body() createDto: CreateSizeDto) {
     return this.sizeService.create(createDto);

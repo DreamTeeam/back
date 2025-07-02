@@ -17,7 +17,6 @@ import { AutoAudit } from 'src/modules/auditModification/decorator/audit-log.dec
 export class BrandController {
   constructor(private readonly brandService: BrandService) {}
 
-  @AutoAudit()
   @Post()
   create(@Body() dto: CreateBrandDto) {
     return this.brandService.create(dto);

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectTenantRepository } from 'src/common/typeorm-tenant-repository/tenant-repository.decorator';
 import { Repository, EntityManager } from 'typeorm';
 
@@ -13,6 +13,8 @@ import { VariantSize } from '../variantSIzes/entities/variantSizes.entity';
 
 @Injectable()
 export class NotificationsService {
+  private readonly logger = new Logger(NotificationsService.name);
+
   constructor(
     @InjectTenantRepository(Notification)
     private readonly notificationRepository: Repository<Notification>,
@@ -47,6 +49,11 @@ export class NotificationsService {
 
     await repo.save(notification);
 
+    this.logger.debug('Destinatario de email', {
+      client: options.client?.user?.email,
+      employee: options.employee?.user?.email,
+      customer: options.customer?.email,
+    });
     if (options.sendEmail && options.emailTemplate) {
       const to =
         options.client?.user?.email ||
@@ -77,7 +84,10 @@ export class NotificationsService {
     return notification;
   }
 
-  async notifyLogin(employeeOrClient: Employee | Client, type: 'employee' | 'client') {
+  async notifyLogin(
+    employeeOrClient: Employee | Client,
+    type: 'employee' | 'client',
+  ) {
     const email = employeeOrClient?.user?.email;
     const name = employeeOrClient?.user?.first_name || 'Usuario';
 
@@ -113,6 +123,7 @@ export class NotificationsService {
     user: Employee | Client,
     type: 'employee' | 'client',
     manager?: EntityManager,
+    credentials?: { email: string; password: string },
   ) {
     const email = user?.user?.email;
     const name = `${user?.user?.first_name} ${user?.user?.last_name}`;
@@ -120,7 +131,11 @@ export class NotificationsService {
     const common = {
       type: NotificationType.WELCOME,
       sendEmail: true,
-      emailContext: { name },
+      emailContext: {
+        name,
+        email: credentials?.email,
+        password: credentials?.password,
+      },
       manager,
     };
 

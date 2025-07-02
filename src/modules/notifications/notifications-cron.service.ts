@@ -1,9 +1,9 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { InjectTenantRepository } from 'src/common/typeorm-tenant-repository/tenant-repository.decorator';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Membership } from 'src/modules/subscriptions/membership/entities/membership.entity';
 import { NotificationsService } from './notifications.service';
@@ -12,23 +12,24 @@ import { VariantSize } from 'src/modules/variantSIzes/entities/variantSizes.enti
 import { Order } from '../orders/entities/order.entity';
 import { CompanySubscription } from 'src/master_data/company_subscription/entities/company-subscription.entity';
 import { Employee } from '../users/entities/employee.entity';
-
+import { TenantConnectionService } from 'src/common/tenant-connection/tenant-connection.service';
 
 @Injectable()
 export class NotificationsCronService implements OnModuleInit {
   private readonly logger = new Logger(NotificationsCronService.name);
   constructor(
+    @InjectDataSource('masterConnection')
+    private readonly masterDataSource: DataSource,
     private readonly dataSource: DataSource,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly notificationsService: NotificationsService,
+    private readonly tenantConnectionService: TenantConnectionService,
     @InjectTenantRepository(Membership)
     private readonly membershipRepo: Repository<Membership>,
     @InjectTenantRepository(VariantSize)
     private readonly variantSizeRepo: Repository<VariantSize>,
     @InjectTenantRepository(Order)
     private readonly orderRepository: Repository<Order>,
-    @InjectTenantRepository(CompanySubscription)
-    private readonly companySubscriptionRepo: Repository<CompanySubscription>,
   ) {}
 
   onModuleInit() {
@@ -162,7 +163,11 @@ export class NotificationsCronService implements OnModuleInit {
 
   async notifyCompanySubscriptionsExpiring() {
     try {
-      const subscriptions = await this.companySubscriptionRepo
+      // 1. Consultamos las suscripciones activas que vencen en los próximos 3 días desde la BD maestra
+      const companySubscriptionRepo =
+        this.masterDataSource.getRepository(CompanySubscription);
+
+      const subscriptions = await companySubscriptionRepo
         .createQueryBuilder('sub')
         .leftJoinAndSelect('sub.customer', 'customer')
         .where("sub.status = 'active'")
@@ -171,16 +176,36 @@ export class NotificationsCronService implements OnModuleInit {
         )
         .getMany();
 
-      const admins = await this.notificationsService.getAdmins();
+      this.logger.log(
+        `Se encontraron ${subscriptions.length} suscripciones próximas a expirar`,
+      );
 
-      for (const admin of admins) {
-        for (const sub of subscriptions) {
-          try {
+      for (const sub of subscriptions) {
+        const customer = sub.customer;
+
+        try {
+          // 2. Obtener conexión al tenant (por ID del customer)
+          const tenantDataSource =
+            await this.tenantConnectionService.getTenantDataSource(customer.id);
+          const employeeRepo = tenantDataSource.getRepository(Employee);
+
+          // 3. Buscar el empleado con rol admin activo
+          const admin = await employeeRepo
+            .createQueryBuilder('employee')
+            .leftJoinAndSelect('employee.user', 'user')
+            .leftJoin('employee.roles', 'role')
+            .where('UPPER(role.name) = :roleName', { roleName: 'ADMIN' })
+            .getOne();
+
+          // 4. Enviar notificación al admin
+          if (admin) {
+            this.logger.log(
+              `Admin encontrado para ${customer.slug}: ${admin.user?.email}`,
+            );
             await this.notificationsService.sendNotification({
               type: NotificationType.COMPANY_SUBSCRIPTION_EXPIRING,
               title: 'Tu suscripción empresarial está por vencer',
               message: `La suscripción de tu empresa vence el ${sub.end_date}`,
-              customer: sub.customer,
               employee: admin,
               sendEmail: true,
               emailTemplate: 'company-subscription-expiring',
@@ -188,18 +213,19 @@ export class NotificationsCronService implements OnModuleInit {
                 expirationDate: new Date(sub.end_date).toLocaleDateString(
                   'es-CO',
                 ),
-                companyName: sub.customer.name,
+                companyName: customer.name,
               },
             });
+
             this.logger.log(
-              `Notificada expiración a empresa ${sub.customer?.email}`,
-            );
-          } catch (error) {
-            this.logger.error(
-              `Error notificando a empresa ${sub.customer?.email}`,
-              error,
+              `Notificada expiración a admin ${admin.user?.email} del tenant ${customer.slug}`,
             );
           }
+        } catch (error) {
+          this.logger.error(
+            `Error notificando a empresa ${customer.slug} (${customer.id}): ${error.message}`,
+            error,
+          );
         }
       }
     } catch (error) {
@@ -209,4 +235,54 @@ export class NotificationsCronService implements OnModuleInit {
       );
     }
   }
+
+  // async notifyCompanySubscriptionsExpiring() {
+  //   try {
+  //     const subscriptions = await this.companySubscriptionRepo
+  //       .createQueryBuilder('sub')
+  //       .leftJoinAndSelect('sub.customer', 'customer')
+  //       .where("sub.status = 'active'")
+  //       .andWhere(
+  //         "sub.end_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '3 day'",
+  //       )
+  //       .getMany();
+
+  //     const admins = await this.notificationsService.getAdmins();
+
+  //     for (const admin of admins) {
+  //       for (const sub of subscriptions) {
+  //         try {
+  //           await this.notificationsService.sendNotification({
+  //             type: NotificationType.COMPANY_SUBSCRIPTION_EXPIRING,
+  //             title: 'Tu suscripción empresarial está por vencer',
+  //             message: `La suscripción de tu empresa vence el ${sub.end_date}`,
+  //             customer: sub.customer,
+  //             employee: admin,
+  //             sendEmail: true,
+  //             emailTemplate: 'company-subscription-expiring',
+  //             emailContext: {
+  //               expirationDate: new Date(sub.end_date).toLocaleDateString(
+  //                 'es-CO',
+  //               ),
+  //               companyName: sub.customer.name,
+  //             },
+  //           });
+  //           this.logger.log(
+  //             `Notificada expiración a empresa ${sub.customer?.email}`,
+  //           );
+  //         } catch (error) {
+  //           this.logger.error(
+  //             `Error notificando a empresa ${sub.customer?.email}`,
+  //             error,
+  //           );
+  //         }
+  //       }
+  //     }
+  //   } catch (error) {
+  //     this.logger.error(
+  //       'Error general en notifyCompanySubscriptionsExpiring',
+  //       error,
+  //     );
+  //   }
+  // }
 }

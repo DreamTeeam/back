@@ -36,7 +36,6 @@ export class ProductController {
     private readonly productSearchService: ProductSearchService,
   ) {}
 
-  @AutoAudit()
   @Post()
   @UseGuards(AuthGuard('jwt'))
   create(@Body() createDto: CreateProductDto, @GetUser() user: { userId: string }) {

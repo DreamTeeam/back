@@ -17,7 +17,6 @@ import { AutoAudit } from 'src/modules/auditModification/decorator/audit-log.dec
 export class SubCategoryController {
   constructor(private readonly subCategoryService: SubCategoryService) {}
 
-  @AutoAudit()
   @Post()
   create(@Body() dto: CreateSubCategoryDto) {
     return this.subCategoryService.create(dto);

@@ -4,6 +4,7 @@ import {
   Column,
   ManyToOne,
   CreateDateColumn,
+  JoinColumn,
 } from 'typeorm';
 import { Client } from 'src/modules/users/entities/client.entity';
 import { Employee } from 'src/modules/users/entities/employee.entity';
@@ -29,13 +30,16 @@ export class Notification {
   @Column({ default: false })
   sent_by_email: boolean;
 
-  @ManyToOne(() => Client, { nullable: true })
+  @ManyToOne(() => Client, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'clientId' }) 
   client: Client;
 
-  @ManyToOne(() => Employee, { nullable: true })
+  @ManyToOne(() => Employee, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'employeeId' })
   employee: Employee;
 
   @ManyToOne(() => Customer, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'customerId' }) 
   customer: Customer;
 
   @CreateDateColumn({ type: 'timestamp' })
