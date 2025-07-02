@@ -11,6 +11,7 @@ import { CancellationModule } from '../cancellation/cancellation.module';
 import { TenantTypeOrmModule } from '../../common/typeorm-tenant-repository/tenant-repository.provider';
 import { NotificationsModule } from '../notifications/notifications.module';
 
+
 @Module({
   imports: [
     forwardRef(() => StripeModule),
@@ -18,7 +19,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     SubscriptionsModule,
     ProductModule,
     CancellationModule,
-    NotificationsModule,
+    forwardRef(() => NotificationsModule),
   ],
   controllers: [OrdersController],
   providers: [

@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
+import { OrdersModule } from '../orders/orders.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Notification } from './entities/notification.entity';
 import { NotificationsService } from './notifications.service';
@@ -15,9 +16,12 @@ import { CompanySubscription } from 'src/master_data/company_subscription/entiti
 import { TenantTypeOrmModule } from 'src/common/typeorm-tenant-repository/tenant-repository.provider';
 import { TenantConnectionModule } from 'src/common/tenant-connection/tenant-connection.module';
 import { masterDbConfig } from 'src/config/typeorm';
+import { ChatModule } from '../websocket-chat/chat.module';
 
 @Module({
   imports: [
+    forwardRef(() => OrdersModule),
+    ChatModule,
     TenantTypeOrmModule.forFeature([Notification, Membership, VariantSize, Order, CompanySubscription]),
     TypeOrmModule.forFeature([CompanySubscription], 'masterConnection'),
     MailerModule.forRoot({

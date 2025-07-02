@@ -13,6 +13,7 @@ import { Order } from '../orders/entities/order.entity';
 import { CompanySubscription } from 'src/master_data/company_subscription/entities/company-subscription.entity';
 import { Employee } from '../users/entities/employee.entity';
 import { TenantConnectionService } from 'src/common/tenant-connection/tenant-connection.service';
+import { ChatGateway } from '../websocket-chat/chat.gateway';  // NACHO
 
 @Injectable()
 export class NotificationsCronService implements OnModuleInit {
@@ -30,6 +31,7 @@ export class NotificationsCronService implements OnModuleInit {
     private readonly variantSizeRepo: Repository<VariantSize>,
     @InjectTenantRepository(Order)
     private readonly orderRepository: Repository<Order>,
+    private readonly chatGateway: ChatGateway, // NACHO
   ) {}
 
   onModuleInit() {
@@ -101,6 +103,7 @@ export class NotificationsCronService implements OnModuleInit {
   }
 
   async notifyLowStock() {
+    this.logger.log('Ejecutando tarea cron para notificar stock bajo...');
     try {
       const variants = await this.variantSizeRepo
         .createQueryBuilder('vs')
@@ -115,6 +118,15 @@ export class NotificationsCronService implements OnModuleInit {
       this.logger.log(
         `Notificaciones de bajo stock enviadas (${variants.length})`,
       );
+      if (variants.length > 0) {
+      this.chatGateway.server.emit('low_stock_notification', {
+        title: 'Alerta de Stock Bajo',
+        message: `Hay ${variants.length} productos con bajo stock.`,
+        count: variants.length,
+      });
+      this.logger.log('Notificación PUSH de bajo stock enviada a los clientes.');
+    }
+    
     } catch (error) {
       this.logger.error('Error en notifyLowStock', error);
     }
@@ -236,53 +248,4 @@ export class NotificationsCronService implements OnModuleInit {
     }
   }
 
-  // async notifyCompanySubscriptionsExpiring() {
-  //   try {
-  //     const subscriptions = await this.companySubscriptionRepo
-  //       .createQueryBuilder('sub')
-  //       .leftJoinAndSelect('sub.customer', 'customer')
-  //       .where("sub.status = 'active'")
-  //       .andWhere(
-  //         "sub.end_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '3 day'",
-  //       )
-  //       .getMany();
-
-  //     const admins = await this.notificationsService.getAdmins();
-
-  //     for (const admin of admins) {
-  //       for (const sub of subscriptions) {
-  //         try {
-  //           await this.notificationsService.sendNotification({
-  //             type: NotificationType.COMPANY_SUBSCRIPTION_EXPIRING,
-  //             title: 'Tu suscripción empresarial está por vencer',
-  //             message: `La suscripción de tu empresa vence el ${sub.end_date}`,
-  //             customer: sub.customer,
-  //             employee: admin,
-  //             sendEmail: true,
-  //             emailTemplate: 'company-subscription-expiring',
-  //             emailContext: {
-  //               expirationDate: new Date(sub.end_date).toLocaleDateString(
-  //                 'es-CO',
-  //               ),
-  //               companyName: sub.customer.name,
-  //             },
-  //           });
-  //           this.logger.log(
-  //             `Notificada expiración a empresa ${sub.customer?.email}`,
-  //           );
-  //         } catch (error) {
-  //           this.logger.error(
-  //             `Error notificando a empresa ${sub.customer?.email}`,
-  //             error,
-  //           );
-  //         }
-  //       }
-  //     }
-  //   } catch (error) {
-  //     this.logger.error(
-  //       'Error general en notifyCompanySubscriptionsExpiring',
-  //       error,
-  //     );
-  //   }
-  // }
 }

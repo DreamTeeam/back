@@ -11,6 +11,7 @@ import { Employee } from 'src/modules/users/entities/employee.entity';
 import { Customer } from 'src/master_data/customer/entities/customer.entity';
 import { VariantSize } from '../variantSIzes/entities/variantSizes.entity';
 
+
 @Injectable()
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
