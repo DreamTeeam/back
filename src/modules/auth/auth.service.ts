@@ -209,11 +209,11 @@ export class AuthService {
     }
 
      // 🔔 Notificación de login //Steven
-    if (userType === 'employee') {
-      await this.notificationsService.notifyLogin(user.employee, 'employee');
-    } else {
-      await this.notificationsService.notifyLogin(user.client, 'client');
-    }
+    // if (userType === 'employee') {
+    //   await this.notificationsService.notifyLogin(user.employee, 'employee');
+    // } else {
+    //   await this.notificationsService.notifyLogin(user.client, 'client');
+    // }
 
     return user;
   }
