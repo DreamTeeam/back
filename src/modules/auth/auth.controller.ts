@@ -70,7 +70,7 @@ export class AuthController {
       maxAge: 1000 * 60 * 60 * 24 * 7,
     });
     response.redirect(
-      'https://termedstorm-front.vercel.app/auth/success?from=google&type=client',
+      'https://nivoapp.vercel.app/auth/success?from=google&type=client',
     );
   }
 
@@ -125,7 +125,7 @@ export class AuthController {
       maxAge: 1000 * 60 * 60 * 24 * 7,
     });
     response.redirect(
-      'https://termedstorm-front.vercel.app/auth/success?from=google&type=employee',
+      'https://nivoapp.vercel.app/auth/success?from=google&type=employee',
     );
   }
 

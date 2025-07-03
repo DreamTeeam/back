@@ -47,8 +47,8 @@ export class SubscriptionsService {
       customerName,
     );
 
-    const successUrl = 'https://termedstorm-front.vercel.app/subscripton_payment/success';
-    const cancelUrl = 'https://termedstorm-front.vercel.app/subscripton_payment/cancelled';
+    const successUrl = 'https://nivoapp.vercel.app/subscripton_payment/success';
+    const cancelUrl = 'https://nivoapp.vercel.app/subscripton_payment/cancelled';
 
     const checkoutSession =
       await this.stripeService.createSubscriptionCheckoutSession(

@@ -167,8 +167,8 @@ export class OrdersService {
     const session = await this.stripeService.createCheckoutSession(
       lineItems,
       metadata,
-      'https://termedstorm-front.vercel.app/cart_payment/success',
-      'https://termedstorm-front.vercel.app/cart_payment/cancelled',
+      'https://nivoapp.vercel.app/cart_payment/success',
+      'https://nivoapp.vercel.app/cart_payment/cancelled',
       stripeCustomer.id,
     );
 
