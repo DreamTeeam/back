@@ -13,7 +13,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { GoogleClientStrategy } from './strategies/google-client.strategy';
 import { TenantTypeOrmModule } from 'src/common/typeorm-tenant-repository/tenant-repository.provider';
-import { NotificationsModule } from '../notifications/notifications.module'; //Steven
+// import { NotificationsModule } from '../notifications/notifications.module'; //Steven
 import { AuthGuard } from './guards/auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 
@@ -31,7 +31,7 @@ import { RolesGuard } from './guards/roles.guard';
       }),
     }),
     TenantTypeOrmModule.forFeature([User, Employee, Client, Role]),
-    forwardRef(() => NotificationsModule),
+    // forwardRef(() => NotificationsModule),
   ],
   controllers: [AuthController],
   providers: [

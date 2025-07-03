@@ -22,7 +22,7 @@ import { VariantSize } from '../variantSIzes/entities/variantSizes.entity';
 import { InjectTenantRepository } from '../../common/typeorm-tenant-repository/tenant-repository.decorator';
 import { getTenantContext } from '../../common/context/tenant-context';
 import { PaymentMethod } from './payment-method.enum';
-import { NotificationsService } from '../notifications/notifications.service'; //Steven
+// import { NotificationsService } from '../notifications/notifications.service'; //Steven
 import { IdConverterService } from 'src/common/services/id-converter.service'; // [x] Aquí importo el service
 
 @Injectable() // <-- Añadir esto explícitamente
@@ -35,7 +35,7 @@ export class OrdersService {
     private readonly stripeService: StripeService,
     private readonly productService: ProductService,
     private readonly cancellationService: CancellationService,
-    private readonly notificationsService: NotificationsService,
+    // private readonly notificationsService: NotificationsService,
     private readonly idConverter: IdConverterService, //[x] Aquó lo inyecto
   ) {
     this.logger = new Logger(OrdersService.name);
@@ -328,20 +328,20 @@ export class OrdersService {
         item.quantity,
       );
 
-      //Steven
-      const updatedVariantSize = await entityManager.findOne(VariantSize, {
-        where: { id: variantSize.id },
-        relations: [
-          'variantProduct',
-          'variantProduct.product',
-          'variantProduct.product.employee',
-          'variantProduct.product.employee.user',
-        ],
-      });
+      // //Steven
+      // const updatedVariantSize = await entityManager.findOne(VariantSize, {
+      //   where: { id: variantSize.id },
+      //   relations: [
+      //     'variantProduct',
+      //     'variantProduct.product',
+      //     'variantProduct.product.employee',
+      //     'variantProduct.product.employee.user',
+      //   ],
+      // });
 
-      if (updatedVariantSize) {
-        await this.notificationsService.notifyIfLowStock(updatedVariantSize);
-      }
+      // if (updatedVariantSize) {
+      //   await this.notificationsService.notifyIfLowStock(updatedVariantSize);
+      // }
       // Steven
 
       variantSizeRecords.push(variantSize);

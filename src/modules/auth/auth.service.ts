@@ -20,7 +20,7 @@ import { Client } from '../users/entities/client.entity';
 import { Role } from '../roles/entities/role.entity';
 import { TenantConnectionService } from '../../common/tenant-connection/tenant-connection.service';
 import { getTenantContext } from '../../common/context/tenant-context';
-import { NotificationsService } from '../notifications/notifications.service'; //Steven
+// import { NotificationsService } from '../notifications/notifications.service'; //Steven
 import { instanceToPlain } from 'class-transformer';
 
 
@@ -32,7 +32,7 @@ export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly tenantConnectionService: TenantConnectionService,
-    private readonly notificationsService: NotificationsService, //Steven
+    // private readonly notificationsService: NotificationsService, //Steven
   ) {}
 
   // --- 🔧 Métodos utilitarios para obtener repositorios dinámicos ---
@@ -98,7 +98,7 @@ export class AuthService {
       );
     }
 
-     await this.notificationsService.notifyWelcome(user.employee, 'employee'); //Steven
+    //  await this.notificationsService.notifyWelcome(user.employee, 'employee'); //Steven
 
     const payload = this.createJwtPayload(user);
     return this.jwtService.sign(payload);
@@ -150,12 +150,13 @@ export class AuthService {
         user = savedClient.user;
       
         //Steven
-      await this.notificationsService.notifyWelcome(
-          savedClient,
-          'client',
-          manager,
-        ); //Steven
-      };
+      // await this.notificationsService.notifyWelcome(
+      //     savedClient,
+      //     'client',
+      //     manager,
+      //   ); //Steven
+      // };
+      }
 
       if (!user)
         throw new InternalServerErrorException(
@@ -312,12 +313,12 @@ export class AuthService {
         
             const savedEmployee = await employeeRepo.save(newEmployee);
 
-        await this.notificationsService.notifyWelcome(
-          savedEmployee,
-          'employee',
-           manager,
-            { email: newUser.email, password: dto.password }, //Steven
-        );
+        // await this.notificationsService.notifyWelcome(
+        //   savedEmployee,
+        //   'employee',
+        //    manager,
+        //     { email: newUser.email, password: dto.password }, //Steven
+        // );
         return savedEmployee.user;
 
         
@@ -329,12 +330,12 @@ export class AuthService {
         const newClient = clientRepo.create({ user: newUser });
         const savedClient = await clientRepo.save(newClient);
 
-        await this.notificationsService.notifyWelcome(
-          savedClient,
-          'client',
-          manager,
-            { email: newUser.email, password: dto.password },//Steven
-        ); 
+        // await this.notificationsService.notifyWelcome(
+        //   savedClient,
+        //   'client',
+        //   manager,
+        //     { email: newUser.email, password: dto.password },//Steven
+        // ); 
 
       return newUser;
     }

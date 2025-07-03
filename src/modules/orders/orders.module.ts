@@ -9,7 +9,7 @@ import { OrderDetail } from './entities/orderDetail.entity';
 import { ProductModule } from '../products/product.module';
 import { CancellationModule } from '../cancellation/cancellation.module';
 import { TenantTypeOrmModule } from '../../common/typeorm-tenant-repository/tenant-repository.provider';
-import { NotificationsModule } from '../notifications/notifications.module';
+// import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -17,7 +17,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     TenantTypeOrmModule.forFeature([Order, OrderDetail]),
     SubscriptionsModule,
     CancellationModule,
-    forwardRef(() => NotificationsModule),
+    // forwardRef(() => NotificationsModule),
     forwardRef(() => ProductModule),
   ],
   controllers: [OrdersController],

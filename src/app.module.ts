@@ -37,7 +37,7 @@ import { ShipmentsModule } from './modules/shipments/shipments.module';
 import { CheckoutModule } from './modules/checkout/checkout.module';
 import { ChatModule } from './modules/websocket-chat/chat.module';
 import { ChatGateway } from './modules/websocket-chat/chat.gateway';
-import { NotificationsModule } from './modules/notifications/notifications.module';
+// import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
@@ -88,7 +88,7 @@ import { SharedModule } from './common/services/shared.module';
     Size,
     VariantSizesModule,
     ColorModule,
-    NotificationsModule,
+    // NotificationsModule,
     CancellationReasonModule,
     CancellationModule,
     ShipmentsModule,
