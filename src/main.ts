@@ -8,7 +8,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { rawBody: true });
   app.enableCors({
-    origin: ['http://localhost:4000/', 'https://nivoapp.vercel.app/'], //BUG Para Local
+    origin: ['http://localhost:4000', 'https://nivoapp.vercel.app'], //BUG Para Local
     credentials: true,
   });
 
