@@ -85,12 +85,12 @@ export class AuthService {
     const user = await this.getUserRepository().findOne({
       where: { email: googleUser.email },
       relations: { employee: { roles: true } },
-      withDeleted: true, 
+      // withDeleted: true, 
     });
 
-    if (user && user.deletedAt) {
-      throw new ForbiddenException('This account has been locked. Please contact an administrator.');
-    }
+    // if (user && user.deletedAt) {
+    //   throw new ForbiddenException('This account has been locked. Please contact an administrator.');
+    // }
 
     if (!user || !user.employee) {
       throw new UnauthorizedException(
@@ -119,12 +119,12 @@ export class AuthService {
       let user = await userRepo.findOne({
         where: { email: googleUser.email },
         relations: { client: true },
-        withDeleted: true, 
+        // withDeleted: true, 
       });
       
-      if (user && user.deletedAt) {
-        throw new ForbiddenException('This account has been locked. Please contact an administrator.');
-      }
+      // if (user && user.deletedAt) {
+      //   throw new ForbiddenException('This account has been locked. Please contact an administrator.');
+      // }
 
 
       if (user && !user.client) {
@@ -178,20 +178,20 @@ export class AuthService {
 
     const relations =
       userType === 'employee'
-        ? { employee: { roles: true, user: true } } // STEVEN Y NACHO
+        ? { employee: { roles: true } } // STEVEN Y NACHO
         : { client: true };
 
 
     const user = await this.getUserRepository().findOne({
       where: { email },
       relations,
-      withDeleted: true, // Se busca también en eliminados
+      // withDeleted: true, // Se busca también en eliminados
     });
 
     
-    if (user && user.deletedAt) {
-      throw new ForbiddenException('This account has been locked. Please contact an administrator.');
-    }
+    // if (user && user.deletedAt) {
+    //   throw new ForbiddenException('This account has been locked. Please contact an administrator.');
+    // }
     
 
  //agrego
@@ -261,19 +261,20 @@ export class AuthService {
       
       const existingUser = await userRepo.findOne({
           where: { email: dto.email },
-          withDeleted: true, // Se busca también en eliminados
+          // withDeleted: true, // Se busca también en eliminados
       });
 
       if (existingUser) {
         
-        if (existingUser.deletedAt) {
-          throw new ForbiddenException('This account has been locked. Please contact an administrator.');
-        }
+        // if (existingUser.deletedAt) {
+        //   throw new ForbiddenException('This account has been locked. Please contact an administrator.');
+        // }
         
         throw new ConflictException('Email already registered');
       }
 
       const hashedPassword = await bcrypt.hash(dto.password, 10);
+      
       
       let newUser: User;
 
@@ -311,37 +312,22 @@ export class AuthService {
           roles: rolesToAssign 
         });
         
-            const savedEmployee = await employeeRepo.save(newEmployee);
-
-        // await this.notificationsService.notifyWelcome(
-        //   savedEmployee,
-        //   'employee',
-        //    manager,
-        //     { email: newUser.email, password: dto.password }, //Steven
-        // );
-        return savedEmployee.user;
-
-        
+             await employeeRepo.save(newEmployee);
 
       } else {
         const clientRepo = manager.getRepository(Client);
         newUser = userRepo.create({ ...dto, password: hashedPassword });
 
         const newClient = clientRepo.create({ user: newUser });
-        const savedClient = await clientRepo.save(newClient);
+        await clientRepo.save(newClient);
+      }
 
-        // await this.notificationsService.notifyWelcome(
-        //   savedClient,
-        //   'client',
-        //   manager,
-        //     { email: newUser.email, password: dto.password },//Steven
-        // ); 
-
+      
       return newUser;
-    }
     });
+    }
   }
-}
+
 
 
 
