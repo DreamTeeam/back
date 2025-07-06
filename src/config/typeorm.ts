@@ -42,7 +42,7 @@ export const masterDbConfig: TypeOrmModuleOptions = {
   database: process.env.MASTER_DB_DATABASE || '',
   entities: [Customer, CompanySubscription, GlobalMembershipType], //! Solo las entidades de la DB Maestra
   dropSchema: false,
-  synchronize: true,
+  synchronize: false,
   name: 'masterConnection',
 };
 

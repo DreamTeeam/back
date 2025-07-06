@@ -38,8 +38,8 @@ export class CompanySubscriptionService {
     const session = await this.stripeService.createSubscriptionCheckoutSession(
       stripeCustomer.id,
       price_id,
-      'http://localhost:4000/payment-success',
-      'http://localhost:4000/payment-cancelled',
+      'http://localhost:4000/subscripton_payment/success',
+      'http://localhost:4000/subscripton_payment/cancelled',
       { context: 'customer' },
     );
 

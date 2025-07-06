@@ -10,8 +10,8 @@ import { ShipmentVariant } from './shioment-variant.entity';
 
 @Entity('tw_embarques_sizes')
 export class ShipmentSize {
-  @PrimaryGeneratedColumn({ name: 'id_embarque_size' })
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ name: 'n_cantidad_stock', type: 'float' })
   stock: number;

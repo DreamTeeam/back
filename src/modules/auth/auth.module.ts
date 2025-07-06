@@ -13,6 +13,8 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { GoogleClientStrategy } from './strategies/google-client.strategy';
 import { TenantTypeOrmModule } from 'src/common/typeorm-tenant-repository/tenant-repository.provider';
+import { NotificationsModule } from '../notifications/notifications.module'; //Steven
+
 
 @Module({
   imports: [
@@ -22,12 +24,18 @@ import { TenantTypeOrmModule } from 'src/common/typeorm-tenant-repository/tenant
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
+<<<<<<< HEAD
         signOptions: { 
           expiresIn: configService.get<string>('JWT_EXPIRES_IN') || "7d",
+=======
+        signOptions: {
+          expiresIn: configService.get<string>('JWT_EXPIRES_IN') || '7d',
+>>>>>>> 3cbe21238b88be6857abff1a9a1a82d2a3ddbc69
         },
       }),
     }),
     TenantTypeOrmModule.forFeature([User, Employee, Client, Role]),
+    NotificationsModule, //Steven
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, GoogleStrategy, GoogleClientStrategy],

@@ -31,59 +31,60 @@ export class ProductVariantService {
     private readonly variantSizeService: VariantSizesService,
   ) {}
 
-async create(
-  createDto: CreateProductVariantDto,
-  productArg?: Product,
-  manager?: EntityManager,
-): Promise<any> {
-  const { variantSizes = [], color_id, product_id, ...rest } = createDto;
+  async create(
+    createDto: CreateProductVariantDto,
+    productArg?: Product,
+    manager?: EntityManager,
+  ): Promise<any> {
+    const { variantSizes = [], color_id, product_id, ...rest } = createDto;
 
     const product = productArg
-    ? productArg
-    : product_id
-      ? manager
-      ? await manager.findOneBy(Product, { id: product_id })
-      : await this.productRepository.findOneBy({ id: product_id })
-    : null;
+      ? productArg
+      : product_id
+        ? manager
+          ? await manager.findOneBy(Product, { id: product_id })
+          : await this.productRepository.findOneBy({ id: product_id })
+        : null;
 
-  if (!product) throw new NotFoundException(`Product with id ${product_id} not found`);
+    if (!product)
+      throw new NotFoundException(`Product with id ${product_id} not found`);
 
-   const color = manager
-    ? await manager.findOneBy(Color, { id: color_id })
-    : await this.colorRepository.findOneBy({ id: color_id });
-  if (!color) throw new NotFoundException(`Color with id ${color_id} not found`);
+    const color = manager
+      ? await manager.findOneBy(Color, { id: color_id })
+      : await this.colorRepository.findOneBy({ id: color_id });
+    if (!color)
+      throw new NotFoundException(`Color with id ${color_id} not found`);
 
     const variant = manager
-    ? manager.create(ProductVariant, { ...rest, product, color })
-    : this.variantRepository.create({ ...rest, product, color });
+      ? manager.create(ProductVariant, { ...rest, product, color })
+      : this.variantRepository.create({ ...rest, product, color });
 
-  const savedVariant = manager
-    ? await manager.save(variant)
-    : await this.variantRepository.save(variant);
+    const savedVariant = manager
+      ? await manager.save(variant)
+      : await this.variantRepository.save(variant);
 
-      if (variantSizes.length > 0) {
-    for (const sizeDto of variantSizes) {
-      await this.variantSizeService.create(sizeDto, savedVariant, manager);
+    if (variantSizes.length > 0) {
+      for (const sizeDto of variantSizes) {
+        await this.variantSizeService.create(sizeDto, savedVariant, manager);
+      }
     }
+
+    const fullVariant = manager
+      ? await manager.findOne(ProductVariant, {
+          where: { id: savedVariant.id },
+          relations: ['product', 'color', 'variantSizes', 'variantSizes.size'],
+        })
+      : await this.variantRepository.findOne({
+          where: { id: savedVariant.id },
+          relations: ['product', 'color', 'variantSizes', 'variantSizes.size'],
+        });
+
+    return instanceToPlain(fullVariant);
   }
-
-  const fullVariant = manager
-    ? await manager.findOne(ProductVariant, {
-        where: { id: savedVariant.id },
-        relations: ['product', 'color', 'variantSizes', 'variantSizes.size'],
-      })
-    : await this.variantRepository.findOne({
-        where: { id: savedVariant.id },
-        relations: ['product', 'color', 'variantSizes', 'variantSizes.size'],
-      });
-
-  return instanceToPlain(fullVariant);
-}
-
 
   async findAll(): Promise<any> {
     const productVariants = await this.variantRepository.find({
-      relations: ['variantSizes'],
+      relations: ['color', 'variantSizes', 'product'],
     });
     return instanceToPlain(productVariants);
   }
@@ -91,7 +92,7 @@ async create(
   async findOne(id: string): Promise<any> {
     const variant = await this.variantRepository.findOne({
       where: { id },
-      relations: ['product', 'color', 'variantSizes', 'variantSizes.size'],
+      relations: ['color', 'variantSizes', 'product'],
     });
     if (!variant)
       throw new NotFoundException(`Variant with ID ${id} not found`);
@@ -104,74 +105,64 @@ async create(
   ): Promise<{ message: string }> {
     const variant = await this.variantRepository.findOne({
       where: { id },
-      relations: ['product', 'color', 'variantSizes', 'variantSizes.size'],
+      relations: ['product', 'color'],
     });
 
     if (!variant) {
       throw new NotFoundException(`Variant with ID ${id} not found`);
     }
 
-    const { color_id, product_id, variantSizes = [] } = updateDto;
+    const { color_id, product_id, variantSizes, ...rest } = updateDto;
 
-    if (variantSizes.length > 0 && (color_id || product_id)) {
-      const existingVariants = await this.variantRepository.find({
-        where: {
-          product: { id: product_id ?? variant.product.id },
-          color: { id: color_id ?? variant.color.id },
-        },
-        relations: ['variantSizes', 'variantSizes.size'],
+    let product = variant.product;
+    if (product_id && product_id !== variant.product.id) {
+      const foundProduct = await this.productRepository.findOneBy({
+        id: product_id,
       });
-
-      for (const existing of existingVariants) {
-        if (existing.id === variant.id) continue;
-
-        for (const existingVs of existing.variantSizes) {
-          for (const incomingVs of variantSizes) {
-            if (existingVs.size.id === incomingVs.size_id) {
-              throw new BadRequestException(
-                `Ya existe otra variante con esta talla (size_id=${incomingVs.size_id}) y este color (${color_id ?? variant.color.id}) para el producto`,
-              );
-            }
-          }
-        }
+      if (!foundProduct) {
+        throw new NotFoundException(`Product with ID ${product_id} not found`);
       }
+      product = foundProduct;
     }
-    await this.variantRepository.update(id, {
+
+    let color = variant.color;
+    if (color_id && color_id !== variant.color.id) {
+      const foundColor = await this.colorRepository.findOneBy({ id: color_id });
+      if (!foundColor) {
+        throw new NotFoundException(`Color with ID ${color_id} not found`);
+      }
+      color = foundColor;
+    }
+
+    const updated = this.variantRepository.create({
       ...variant,
-      ...updateDto,
+      ...rest,
+      product,
+      color,
     });
 
-    if (variantSizes.length > 0) {
-      await this.variantSizeRepository.delete({ variantProduct: { id } });
-      const variantSizeEntities = await Promise.all(
-        variantSizes.map(async ({ size_id, stock }) => {
-          const size = await this.sizeRepository.findOne({
-            where: { id: size_id },
-          });
-          if (!size) {
-            throw new NotFoundException(`Size with ID ${size_id} not found`);
-          }
+    await this.variantRepository.save(updated);
 
-          return this.variantSizeRepository.create({
-            size,
-            stock,
-            variantProduct: { id } as any,
-          });
-        }),
-      );
-
-      await this.variantSizeRepository.save(variantSizeEntities);
-    }
-
-    return { message: `Variant with ID ${id} updated successfully` };
+    return {
+      message: `Variant with ID ${id} updated successfully`,
+    };
   }
 
   async delete(id: string): Promise<{ message: string }> {
-    const exists = await this.variantRepository.findOneBy({ id });
-    if (!exists) {
+    const variant = await this.variantRepository.findOne({
+      where: { id },
+      relations: ['variantSizes'],
+    });
+
+    if (!variant) {
       throw new NotFoundException(`Variant with ID ${id} not found`);
     }
+
+    await Promise.all(
+      variant.variantSizes.map((vs) => this.variantSizeService.remove(vs.id)),
+    );
     await this.variantRepository.update(id, { deleted_at: new Date() });
+
     return { message: `Variant with ID ${id} deleted successfully` };
   }
 }

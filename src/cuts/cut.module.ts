@@ -1,14 +1,17 @@
 import { Module } from '@nestjs/common';
-//import { TypeOrmModule } from '@nestjs/typeorm';
-import { Cut } from 'src/cuts/cut.entity';
+import { TenantTypeOrmModule } from 'src/common/typeorm-tenant-repository/tenant-repository.provider'; 
+import { CutsController } from './cut.controller';
+import { CutsService } from './cut.service';
+import { CutRepository } from './cut.repository';
+import { Cut } from './cut.entity';
 import { Audit } from 'src/audits/audit.entity';
-import { CutService } from 'src/cuts/cut.service';
-import { CutController } from 'src/cuts/cut.controller';
-import { CutRepository } from 'src/cuts/cut.repository';
-import { TenantTypeOrmModule } from 'src/common/typeorm-tenant-repository/tenant-repository.provider';
+import { Employee } from 'src/modules/users/entities/employee.entity';
+
 @Module({
-  imports: [TenantTypeOrmModule.forFeature([Cut, Audit])],
-  controllers: [CutController],
-  providers: [CutService, CutRepository],
+  imports: [
+    TenantTypeOrmModule.forFeature([Cut, Audit, Employee]), 
+  ],
+  controllers: [CutsController],
+  providers: [CutsService, CutRepository],
 })
 export class CutModule {}

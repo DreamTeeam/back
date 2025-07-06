@@ -17,7 +17,7 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { CreateCancellationDto } from '../cancellation/dto/create-cancellation.dto';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import { Employee } from '../users/entities/employee.entity';
-// import { AuthGuard } from '@nestjs/passport';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('orders')
 export class OrdersController {
@@ -49,7 +49,7 @@ export class OrdersController {
   }
 
   @Delete(':id')
-  //@UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'))
   cancelOrder(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() createCancellationDto: CreateCancellationDto,

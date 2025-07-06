@@ -1,4 +1,16 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateAuditDto } from './create-auditDto';
+import { IsOptional, IsString } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
-export class UpdateAuditDto extends PartialType(CreateAuditDto) {}
+export class UpdateAuditDto {
+  @ApiPropertyOptional({ example: 'Cierre corregido del turno noche' })
+  @IsOptional()
+  @IsString()
+  description?: string;
+}
+
+
+
+
+
+
+

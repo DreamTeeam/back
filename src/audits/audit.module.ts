@@ -1,14 +1,16 @@
 import { Module } from '@nestjs/common';
-//import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuditController } from 'src/audits/audit.controller';
-import { Audit } from 'src/audits/audit.entity';
-import { AuditRepository } from 'src/audits/audit.repository';
-import { AuditService } from 'src/audits/audit.sevice';
-import { Order } from '../modules/orders/entities/order.entity';
+import { AuditService } from './audit.service';
+import { AuditController } from './audit.controller';
+import { AuditRepository } from './audit.repository';
 import { TenantTypeOrmModule } from 'src/common/typeorm-tenant-repository/tenant-repository.provider';
+import { Audit } from './audit.entity';
+import { Order } from 'src/modules/orders/entities/order.entity';
+import { Employee } from 'src/modules/users/entities/employee.entity';
 
 @Module({
-  imports: [TenantTypeOrmModule.forFeature([Audit, Order])],
+  imports: [
+    TenantTypeOrmModule.forFeature([Audit, Order,Employee]),
+  ],
   controllers: [AuditController],
   providers: [AuditService, AuditRepository],
 })

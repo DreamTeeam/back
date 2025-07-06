@@ -52,9 +52,15 @@ export class VariantSizesService {
       );
     }
 
-    if (stock === undefined || stock === null || stock <= 0) {
+    if (
+      stock === undefined ||
+      stock === null ||
+      isNaN(stock) ||
+      stock <= 0 ||
+      stock > 10000
+    ) {
       throw new BadRequestException(
-        'Stock cannot be empty and must be greater than 0',
+        'Stock must be a number greater than 0 and less than or equal to 10,000',
       );
     }
 
@@ -113,8 +119,15 @@ export class VariantSizesService {
       );
     }
 
-    if (updateDto.stock !== undefined && updateDto.stock <= 0) {
-      throw new BadRequestException('Stock must be greater than 0');
+    if (
+      updateDto.stock !== undefined &&
+      (isNaN(updateDto.stock) ||
+        updateDto.stock <= 0 ||
+        updateDto.stock > 10000)
+    ) {
+      throw new BadRequestException(
+        'Stock must be a number greater than 0 and less than or equal to 10,000',
+      );
     }
 
     const updated = this.variantSizeRepository.create({
@@ -127,10 +140,14 @@ export class VariantSizesService {
     const saved = await this.variantSizeRepository.save(updated);
     return instanceToPlain(saved);
   }
+
   async remove(id: string) {
-    const exists = await this.variantSizeRepository.findOneBy({ id });
+    const exists = await this.variantSizeRepository.findOne({
+    where: { id },
+    withDeleted: false,
+  });
     if (!exists)
-      throw new NotFoundException(`VariantSize with id ${id} not found`);
+      throw new NotFoundException(`VariantSize with id ${id} not found or already deleted`);
     await this.variantSizeRepository.update(id, { deleted_at: new Date() });
     return {
       message: `VariantSize with id ${id} deleted successfully`,

@@ -8,9 +8,11 @@ import {
   IsNotEmpty,
   IsIn,
   IsUUID,
+  IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+import { PaymentMethod } from '../payment-method.enum';
 
 export class ProductOrderDto {
   @ApiProperty({ example: 'c735b720-84a0-4625-a94e-7f994f1e0a11' })
@@ -43,10 +45,11 @@ export class CreateOrderDto {
   @IsOptional()
   customer_id?: string;
 
-  @ApiProperty({ example: 'Efectivo' })
-  @IsString()
-  @IsIn(['Efectivo', 'Tarjeta'])
-  payment_method: 'Efectivo' | 'Tarjeta';
+  @ApiProperty({ example: PaymentMethod.Efectivo, enum: PaymentMethod })
+  @IsEnum(PaymentMethod, {
+    message: `El método de pago debe ser uno de los siguientes: ${Object.values(PaymentMethod).join(', ')}`,
+  })
+  payment_method: PaymentMethod;
 
   @IsArray()
   @ValidateNested({ each: true })

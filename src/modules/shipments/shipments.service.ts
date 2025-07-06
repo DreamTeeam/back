@@ -23,7 +23,7 @@ export class ShipmentsService {
     });
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const shipment = await this.shipmentRepo.findOne({
       where: { id },
       relations: ['variants', 'variants.sizes'],
@@ -36,7 +36,7 @@ export class ShipmentsService {
     return shipment;
   }
 
-  async update(id: number, dto: UpdateShipmentDto) {
+  async update(id: string, dto: UpdateShipmentDto) {
     const shipment = await this.shipmentRepo.preload({ id, ...dto });
 
     if (!shipment) {
@@ -46,13 +46,13 @@ export class ShipmentsService {
     return this.shipmentRepo.save(shipment);
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     const shipment = await this.shipmentRepo.findOneBy({ id });
 
     if (!shipment) {
       throw new NotFoundException(`Embarque con ID ${id} no encontrado`);
     }
 
-    return this.shipmentRepo.softRemove(shipment);
+    return this.shipmentRepo.softDelete(shipment); //* cambiado por softdelete
   }
 }

@@ -13,6 +13,7 @@ import { instanceToPlain } from 'class-transformer';
 import { TenantConnectionService } from 'src/common/tenant-connection/tenant-connection.service';
 import { InjectTenantRepository } from 'src/common/typeorm-tenant-repository/tenant-repository.decorator';
 import { slugify } from '../../utils/slugify'; //NACHO
+
 @Injectable()
 export class SubCategoryService {
   constructor(
@@ -71,7 +72,7 @@ export class SubCategoryService {
     if (slugExists) {
       slug = `${slug}-${Date.now()}`;
     }
-    
+
     const subCategory = this.subCategoryRepository.create({
       ...createDto,
       slug, // NACHO
@@ -114,6 +115,18 @@ export class SubCategoryService {
     const exists = await this.subCategoryRepository.findOneBy({ id });
     if (!exists)
       throw new NotFoundException(`SubCategory with id ${id} not found`);
+
+    const existing = await this.subCategoryRepository.findOne({
+      where: [{ name: updateDto.name }, { key: updateDto.key }],
+    });
+
+    if (existing) {
+      throw new BadRequestException(
+        `Subcategory alredy exist with ${
+          existing.name === updateDto.name ? 'name' : 'key'
+        }: ${existing.name === updateDto.name ? updateDto.name : updateDto.key}`,
+      );
+    }
     await this.subCategoryRepository.update(id, updateDto);
     return { message: `SubCategory with id ${id} updated successfully` };
   }
@@ -126,7 +139,7 @@ export class SubCategoryService {
     return { message: `SubCategory with id ${id} deleted successfully` };
   }
 
-  // NACHO
+    // NACHO
   async findBySlug(slug: string): Promise<SubCategory> {
     const subCategory = await this.subCategoryRepository.findOne({
       where: { slug },

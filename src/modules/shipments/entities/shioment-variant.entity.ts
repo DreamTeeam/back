@@ -11,11 +11,11 @@ import { ShipmentSize } from './shipment-size.entity';
 
 @Entity('tw_embarques_variants')
 export class ShipmentVariant {
-  @PrimaryGeneratedColumn({ name: 'id_embarques_variants' })
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ name: 'n_cantidad_talles', type: 'int', default: 0 })
-  totalSizes: number;
+  total_sizes: number;
 
   @ManyToOne(() => Shipment, (shipment: Shipment) => shipment.variants)
   @JoinColumn({ name: 'id_embarque' })

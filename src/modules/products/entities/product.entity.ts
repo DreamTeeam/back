@@ -15,6 +15,7 @@ import { Brand } from 'src/catalogues/brand/entities/brand.entity';
 import { ProductVariant } from 'src/modules/productsVariant/entities/product-variant.entity';
 import { Exclude } from 'class-transformer';
 import { User } from 'src/modules/users/entities/user.entity';
+import { Employee } from 'src/modules/users/entities/employee.entity';
 
 @Entity('tw_products')
 export class Product {
@@ -50,7 +51,10 @@ export class Product {
   @Column({ type: 'uuid' })
   brand_id: string;
 
-  // NACHO
+  @Column({ type: 'uuid' })
+  employee_id: string;
+
+    // NACHO
   @Column('varchar', { length: 200, unique: true })
   slug: string;
 
@@ -69,10 +73,13 @@ export class Product {
   @OneToMany(() => ProductVariant, (variant) => variant.product)
   variants: ProductVariant[];
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => Employee)
   @JoinColumn({ name: 'employee_id' })
-  employee: User;
-
+  employee: Employee;
+  
+// @ManyToOne(() => User)
+  // @JoinColumn({ name: 'employee_id' })
+  // employee: User;
   @Exclude()
   @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
   created_at: Date;

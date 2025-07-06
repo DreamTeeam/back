@@ -34,8 +34,13 @@ import { TenantMiddleware } from './common/middleware/tenant.middleware';
 import { User } from './modules/users/entities/user.entity';
 import { CancellationModule } from './modules/cancellation/cancellation.module';
 import { ShipmentsModule } from './modules/shipments/shipments.module';
+import { CheckoutModule } from './modules/checkout/checkout.module';
 import { ChatModule } from './modules/websocket-chat/chat.module';
-import { ChatGateway } from './modules/websocket-chat/chat.gateway';
+import { ChatGateway } from './modules/websocket-chat/chat.gateway';import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -81,10 +86,16 @@ import { ChatGateway } from './modules/websocket-chat/chat.gateway';
     Size,
     VariantSizesModule,
     ColorModule,
+    // NotificationsModule,
     CancellationReasonModule,
     CancellationModule,
     ShipmentsModule,
+    CheckoutModule,
+    DashboardModule,
+
+    //! MasterDataModule (usa la conexión 'masterConnection')
     ChatModule,
+    ScheduleModule.forRoot(),
     MasterDataModule,
   ],
   controllers: [],

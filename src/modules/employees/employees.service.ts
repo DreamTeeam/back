@@ -35,6 +35,7 @@ export class EmployeesService {
     const isTargetSuperAdmin = employeeToUpdate.roles.some(
       (role) => role.name === 'SUPERADMIN',
     );
+    
     if (isTargetSuperAdmin) {
       throw new ForbiddenException(
         'The roles of a SUPERADMIN cannot be modified',
@@ -59,5 +60,26 @@ export class EmployeesService {
 
     employeeToUpdate.roles = rolesToAssign;
     return this.employeeRepository.save(employeeToUpdate);
+  }
+
+  // FLOR AGREGADO
+  async findAllForTenant(): Promise<any[]> {
+    const employees = await this.employeeRepository.find({
+      select: {
+        user: { id: true, email: true, first_name: true, last_name: true },
+        roles: { name: true },
+      },
+      relations: {
+        user: true,
+        roles: true,
+      },
+    });
+
+    return employees.map((employee) => ({
+      userId: employee.user.id,
+      email: employee.user.email,
+      name: `${employee.user.first_name} ${employee.user.last_name}`.trim(),
+      roles: employee.roles.map((role) => role.name),
+    }));
   }
 }

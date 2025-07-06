@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-//import { InjectRepository } from '@nestjs/typeorm';
-import { Cut } from './cut.entity';
 import { Repository, IsNull } from 'typeorm';
-import { Audit } from 'src/audits/audit.entity';
-import { InjectTenantRepository } from 'src/common/typeorm-tenant-repository/tenant-repository.decorator';
+import { InjectTenantRepository } from '../common/typeorm-tenant-repository/tenant-repository.decorator';
+import { Cut } from './cut.entity';
+import { Audit } from '../audits/audit.entity';
+import { Employee } from 'src/modules/users/entities/employee.entity';
 
 @Injectable()
 export class CutRepository {
@@ -13,31 +13,42 @@ export class CutRepository {
 
     @InjectTenantRepository(Audit)
     private readonly auditRepo: Repository<Audit>,
+
+    @InjectTenantRepository(Employee) 
+    public readonly employeeRepo: Repository<Employee>,
   ) {}
 
   async getUnassignedAudits() {
-    return this.auditRepo.find({
-      where: { cut_id: IsNull() },
-    });
+    return this.auditRepo.find({ where: { cut: IsNull() } });
   }
 
-  async createCut(data: Partial<Cut>) {
+  createCut(data: Partial<Cut>) {
     const newCut = this.cutRepo.create(data);
     return this.cutRepo.save(newCut);
   }
 
-  async assignAuditsToCut(auditIds: number[], cut_id: number) {
-    await Promise.all(
-      auditIds.map((id) => this.auditRepo.update(id, { cut_id })),
+  assignAuditsToCut(auditIds: string[], cutId: string) {
+    return Promise.all(
+      auditIds.map((id) => this.auditRepo.update(id, { cut: { id: cutId } })),
     );
   }
 
-  async findAll() {
-    return this.cutRepo.find();
+  findAll() {
+    return this.cutRepo.find({ relations: ['employee', 'audits'] });
   }
 
-  async updateCut(id: number, updateDto: Partial<Cut>) {
-    await this.cutRepo.update(id, updateDto);
-    return this.cutRepo.findOne({ where: { id } });
+  findOne(id: string) {
+    return this.cutRepo.findOne({
+      where: { id },
+      relations: ['employee', 'audits'],
+    });
+  }
+
+  updateCut(id: string, updateDto: Partial<Cut>) {
+    return this.cutRepo.update(id, updateDto).then(() => this.findOne(id));
+  }
+
+  softDelete(id: string) {
+    return this.cutRepo.softDelete(id);
   }
 }

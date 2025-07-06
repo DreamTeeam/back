@@ -7,6 +7,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Get,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -30,5 +31,11 @@ export class EmployeesController {
       id,
       updateEmployeeRolesDto,
     );
+  }
+
+ @Get('list')
+  @HttpCode(HttpStatus.OK)
+  getTenantEmployees(): Promise<any[]> {
+    return this.employeesService.findAllForTenant();
   }
 }
