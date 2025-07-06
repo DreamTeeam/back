@@ -9,13 +9,14 @@ import { Repository, In } from 'typeorm';
 import { Employee } from '../users/entities/employee.entity';
 import { Role } from '../roles/entities/role.entity';
 import { UpdateEmployeeRolesDto } from './dto/update-employee-roles.dto';
+import { InjectTenantRepository } from 'src/common/typeorm-tenant-repository/tenant-repository.decorator';
 
 @Injectable()
 export class EmployeesService {
   constructor(
-    @InjectRepository(Employee)
+    @InjectTenantRepository(Employee)
     private readonly employeeRepository: Repository<Employee>,
-    @InjectRepository(Role)
+    @InjectTenantRepository(Role)
     private readonly roleRepository: Repository<Role>,
   ) {}
 

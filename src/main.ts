@@ -11,6 +11,22 @@ async function bootstrap() {
     origin: "http://localhost:4000",
     credentials: true,
   });
+
+  // const allowedOrigins = [
+  //   'https://nivoapp.vercel.app/',
+  //   'http://localhost:3000/',
+  // ];
+
+  // app.enableCors({
+  //   origin: (origin, callback) => {
+  //     if (!origin || allowedOrigins.includes(origin)) {
+  //       callback(null, true);
+  //     } else {
+  //       callback(new Error('Not allowed by CORS'));
+  //     }
+  //   },
+  //   credentials: true,
+  // });TODO Cambiar por opcion de whitelist desde .env
   app.use(loggerGlobal);
   app.useGlobalPipes(
     new ValidationPipe({

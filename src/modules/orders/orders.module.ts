@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { forwardRef, Module, Scope } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { OrdersController } from './orders.controller';
 import { StripeModule } from '../stripe/stripe.module';
@@ -20,7 +20,13 @@ import { TenantTypeOrmModule } from '../../common/typeorm-tenant-repository/tena
     CancellationModule,
   ],
   controllers: [OrdersController],
-  providers: [OrdersService],
+  providers: [
+    {
+      provide: OrdersService,
+      useClass: OrdersService,
+      scope: Scope.REQUEST, // <-- ¡CAMBIO CRÍTICO AQUÍ!
+    },
+  ],
   exports: [OrdersService],
 })
 export class OrdersModule {}

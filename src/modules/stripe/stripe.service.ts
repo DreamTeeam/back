@@ -22,27 +22,45 @@ export class StripeService {
     });
   }
 
-  async findOrCreateCustomer(email: string, name: string) {
+  async findOrCreateCustomer(email: string, name: string, customerId?: string) {
     const customers = await this.stripe.customers.list({
       email: email,
       limit: 1,
     });
 
     if (customers.data.length > 0) {
+      if (customerId && customers.data[0].metadata?.customerId !== customerId) {
+        await this.stripe.customers.update(customers.data[0].id, {
+          metadata: { customerId: customerId },
+        });
+      }
       return customers.data[0];
     }
-    return this.stripe.customers.create({ email, name });
+
+    const metadata: { customerId?: string } = {};
+    if (customerId) {
+      metadata.customerId = customerId;
+    }
+
+    return this.stripe.customers.create({ email, name, metadata });
   }
+
   async retrieveCustomer(id: string): Promise<Stripe.Customer> {
     return this.stripe.customers.retrieve(id) as Promise<Stripe.Customer>;
   }
+
+  // --- NUEVO MÉTODO AÑADIDO ---
+  async retrievePaymentIntent(id: string): Promise<Stripe.PaymentIntent> {
+    return this.stripe.paymentIntents.retrieve(id);
+  }
+  // --- FIN NUEVO MÉTODO ---
 
   async createCheckoutSession(
     lineItems: Stripe.Checkout.SessionCreateParams.LineItem[],
     metadata: Stripe.MetadataParam,
     successUrl: string,
     cancelUrl: string,
-    customerId: string,
+    stripeCustomerId: string,
   ) {
     return this.stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -51,15 +69,20 @@ export class StripeService {
       mode: 'payment',
       success_url: successUrl,
       cancel_url: cancelUrl,
-      customer: customerId,
+      customer: stripeCustomerId,
     });
   }
 
-  async createSubscription(customerId: string, priceId: string) {
+  async createSubscription(
+    stripeCustomerId: string,
+    priceId: string,
+    metadata: Stripe.MetadataParam = {},
+  ) {
     return this.stripe.subscriptions.create({
-      customer: customerId,
+      customer: stripeCustomerId,
       items: [{ price: priceId }],
       expand: ['latest_invoice.payment_intent'],
+      metadata: metadata,
     });
   }
 
@@ -80,14 +103,14 @@ export class StripeService {
   }
 
   async createSubscriptionCheckoutSession(
-    customerId: string,
+    stripeCustomerId: string,
     priceId: string,
     successUrl: string,
     cancelUrl: string,
     metadata: Stripe.MetadataParam = {},
   ): Promise<Stripe.Checkout.Session> {
     return this.stripe.checkout.sessions.create({
-      customer: customerId,
+      customer: stripeCustomerId,
       mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],

@@ -2,23 +2,88 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { RoleSeeder } from './modules/roles/role.seeder';
 import { UserSeeder } from './modules/users/user.seeder';
+import { TenantConnectionService } from './common/tenant-connection/tenant-connection.service';
+
+import { runInTenantContext } from './common/context/tenant-context';
 
 async function bootstrap() {
   const appContext = await NestFactory.createApplicationContext(AppModule);
 
-  const roleSeeder = appContext.get(RoleSeeder);
-  const userSeeder = appContext.get(UserSeeder);
+  const tenantConnectionService = appContext.get(TenantConnectionService);
+
+  const tenantIdsToSeed = ['afbf1cc2-00a1-4640-88ab-02174ba8a349']; // Tu ID de ejemplo
 
   try {
-    console.log('Seeding initial data...');
+    console.log('Iniciando proceso de seeding...');
 
-    await roleSeeder.seed();
-    await userSeeder.seed();
+    for (const customerId of tenantIdsToSeed) {
+      console.log(`\n--- Ejecutando seeders para el tenant: ${customerId} ---`);
 
-    console.log('Seeding complete!');
+      let tenantDataSource;
+      try {
+        tenantDataSource =
+          await tenantConnectionService.getTenantDataSource(customerId);
+      } catch (dataSourceError) {
+        console.error(
+          `No se pudo obtener/crear DataSource para el tenant ${customerId}:`,
+          dataSourceError,
+        );
+        continue;
+      }
+
+      await runInTenantContext(
+        {
+          customerId: customerId,
+          tenantDataSource: tenantDataSource,
+        },
+        async () => {
+          let roleSeederInstance: RoleSeeder | undefined;
+          let userSeederInstance: UserSeeder | undefined;
+
+          try {
+            // Aquí resolvemos las instancias. NestJS manejará su ciclo de vida.
+            roleSeederInstance = await appContext.resolve(RoleSeeder);
+            userSeederInstance = await appContext.resolve(UserSeeder);
+
+            if (roleSeederInstance) {
+              await roleSeederInstance.seed();
+            } else {
+              console.warn(
+                `RoleSeederInstance no pudo ser resuelta para el tenant ${customerId}.`,
+              );
+            }
+
+            if (userSeederInstance) {
+              await userSeederInstance.seed();
+            } else {
+              console.warn(
+                `UserSeederInstance no pudo ser resuelta para el tenant ${customerId}.`,
+              );
+            }
+
+            console.log(`Seeding completado para el tenant: ${customerId}`);
+          } catch (innerError) {
+            console.error(
+              `Error durante el seeding para el tenant ${customerId}:`,
+              innerError,
+            );
+            // Puedes decidir si lanzar el error aquí o solo loguearlo
+            // throw innerError;
+          } finally {
+            // ! ELIMINAMOS LAS LLAMADAS A appContext.release().
+            // ! appContext.close() al final del script se encargará de la limpieza general.
+            // ! NestJS maneja la destrucción de instancias de Scope.REQUEST cuando el contexto de la aplicación se cierra.
+          }
+        },
+      );
+    }
+
+    console.log('\n--- Proceso de seeding finalizado ---');
   } catch (error) {
-    console.error('Seeding failed:', error);
+    console.error('El proceso de seeding falló globalmente:', error);
   } finally {
+    // ! Esto cerrará todos los DataSources de tenants y luego el contexto general de la aplicación.
+    await tenantConnectionService.onModuleDestroy();
     await appContext.close();
   }
 }

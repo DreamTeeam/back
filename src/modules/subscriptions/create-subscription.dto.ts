@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
   IsNotEmpty,
@@ -7,10 +8,12 @@ import {
 } from 'class-validator';
 
 export class CreateSubscriptionDto {
+  @ApiProperty({ example: 'mail@correo.com' })
   @IsEmail()
   @IsNotEmpty()
   email: string;
 
+  @ApiProperty({ example: 'mail@correo.com' })
   @IsString()
   @IsNotEmpty()
   price_id: string; // aca va a tomar cualquier tipo de membresia, ya sea de cliente final o Company,

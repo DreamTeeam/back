@@ -77,8 +77,8 @@ export class AuthController {
   //& --- RUTAS DE EMPLEADOS ---
 
   @Post('employee/register')
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('ADMIN')
+  //@UseGuards(AuthGuard('jwt'), RolesGuard)
+  //@Roles('ADMIN')
   @HttpCode(HttpStatus.CREATED)
   registerEmployee(
     @Body(new ValidationPipe()) registerEmployeeDto: RegisterEmployeeDto,

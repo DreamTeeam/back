@@ -2,11 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Role } from './entities/role.entity';
+import { InjectTenantRepository } from '../../common/typeorm-tenant-repository/tenant-repository.decorator';
 
 @Injectable()
 export class RoleSeeder {
   constructor(
-    @InjectRepository(Role)
+    @InjectTenantRepository(Role)
     private readonly roleRepository: Repository<Role>,
   ) {}
 

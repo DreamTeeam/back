@@ -2,15 +2,15 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
-  Logger,
+  Scope,
+  Logger, // <<-- Importar Logger
 } from '@nestjs/common';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 import { CreateOrderDto, ProductOrderDto } from './dto/create-order.dto';
 import { StripeService } from '../stripe/stripe.service';
 import { Order } from './entities/order.entity';
 import { OrderDetail } from './entities/orderDetail.entity';
 import Stripe from 'stripe';
-//import { InjectRepository } from '@nestjs/typeorm';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { ProductService } from '../products/product.service';
 import { Client } from '../users/entities/client.entity';
@@ -20,18 +20,30 @@ import { CancellationService } from '../cancellation/cancellation.service';
 import { CreateCancellationDto } from '../cancellation/dto/create-cancellation.dto';
 import { VariantSize } from '../variantSIzes/entities/variantSizes.entity';
 import { InjectTenantRepository } from '../../common/typeorm-tenant-repository/tenant-repository.decorator';
+import { getTenantContext } from '../../common/context/tenant-context';
 
-@Injectable()
+@Injectable() // <-- Añadir esto explícitamente
 export class OrdersService {
-  private readonly logger = new Logger(OrdersService.name);
+  private readonly logger: Logger;
+  private readonly instanceId: string;
+
   constructor(
-    @InjectTenantRepository(Order)
-    private readonly orderRepository: Repository<Order>,
     private readonly dataSource: DataSource,
     private readonly stripeService: StripeService,
     private readonly productService: ProductService,
     private readonly cancellationService: CancellationService,
-  ) {}
+  ) {
+    this.logger = new Logger(OrdersService.name);
+    this.instanceId = Math.random().toString(36).substring(2, 9); // <-- ASIGNAMOS UN ID ÚNICO
+
+    // (Puedes dejar estos console.log temporales para confirmar)
+    console.log('--- OrdersService Constructor EXECUTED ---');
+    // console.log('Logger initialized in constructor:', !!this.logger);
+    console.log(
+      `DataSource in constructor (ID: ${this.instanceId}):`,
+      !!this.dataSource,
+    ); // <--- AÑADIR ESTO
+  }
 
   async processNewOrder(dto: CreateOrderDto) {
     if (dto.payment_method === 'Efectivo') {
@@ -74,6 +86,18 @@ export class OrdersService {
   }
 
   async createCardPaymentSession(dto: CreateOrderDto) {
+    // Obtener el customerId del contexto actual del tenant
+    const tenantContext = getTenantContext();
+    if (!tenantContext || !tenantContext.customerId) {
+      this.logger.error(
+        'No se pudo obtener el customerId del contexto del tenant para crear la sesión de Stripe.',
+      );
+      throw new BadRequestException(
+        'Falta información del tenant para procesar el pago.',
+      );
+    }
+    const currentTenantId = tenantContext.customerId;
+
     const variantIds = dto.products.map((p) => p.variant_id);
     const dbVariants =
       await this.productService.findManyVariantsByIds(variantIds);
@@ -97,22 +121,26 @@ export class OrdersService {
         quantity: orderItem.quantity,
       };
     });
+
+    // AÑADE el customerId de tu sistema a los metadatos de Stripe
     const metadata = {
       employeeId: dto.employee_id,
       clientEmail: dto.email || '',
       products: JSON.stringify(dto.products),
+      customerId: currentTenantId, // <-- AÑADIDO: ID del tenant para que Stripe lo devuelva en el webhook
     };
 
     const stripeCustomer = await this.stripeService.findOrCreateCustomer(
       dto.email,
       'Cliente',
+      currentTenantId, // <-- PASAR currentTenantId al crear o buscar el cliente de Stripe
     );
 
     const session = await this.stripeService.createCheckoutSession(
       lineItems,
       metadata,
-      'http://localhost:4000/payment-success',
-      'http://localhost:4000/payment-cancelled',
+      'http://aca-va-la-pag.com/pago-exitoso',
+      'http://la-pagina-again.com/pago-cancelado',
       stripeCustomer.id,
     );
 
@@ -122,6 +150,28 @@ export class OrdersService {
   async createOrderFromStripeSession(
     session: Stripe.Checkout.Session,
   ): Promise<Order> {
+    console.log('--- DEBUGGING OrdersService.createOrderFromStripeSession ---');
+    // console.log('Value of "this":', this);
+    // console.log('Value of "this.logger":', this.logger);
+    // console.log('Type of "this.logger":', typeof this.logger);
+    console.log(
+      `Instance ID in createOrderFromStripeSession: ${this.instanceId}`,
+    ); // <-- AÑADIMOS ESTO
+    // console.log(
+    //   `DataSource in createOrderFromStripeSession: ${!!this.dataSource}`,
+    // ); // <--- AÑADIR ESTO
+
+    if (!this.logger) {
+      console.error(
+        'CRITICAL ERROR: this.logger is undefined right before use in createOrderFromStripeSession. (Should not happen now!)',
+      );
+      throw new Error(
+        'Logger no inicializado. Problema con la inyección de dependencias.',
+      );
+    }
+
+    this.logger.debug('🔥 LLEGAMOS a createOrderFromStripeSession');
+
     this.logger.debug(`--- DENTRO DE CREATE ORDER FROM STRIPE SESSION ---`, {
       sessionId: session.id,
     });
@@ -268,7 +318,8 @@ export class OrdersService {
   }
 
   async findOneById(id: string): Promise<Order> {
-    const order = await this.orderRepository.findOne({
+    const orderRepository = this.dataSource.manager.getRepository(Order);
+    const order = await orderRepository.findOne({
       where: { id },
       relations: {
         employee: true,
@@ -290,7 +341,8 @@ export class OrdersService {
   }
 
   async findAll(): Promise<Order[]> {
-    return this.orderRepository.find({
+    const orderRepository = this.dataSource.manager.getRepository(Order);
+    return orderRepository.find({
       relations: {
         employee: true,
         client: { user: true },
@@ -303,7 +355,8 @@ export class OrdersService {
   }
 
   async update(id: string, updateOrderDto: UpdateOrderDto): Promise<Order> {
-    const order = await this.orderRepository.preload({
+    const orderRepository = this.dataSource.manager.getRepository(Order);
+    const order = await orderRepository.preload({
       id: id,
       ...updateOrderDto,
     });
@@ -312,7 +365,7 @@ export class OrdersService {
       throw new NotFoundException(`Orden con ID ${id} no encontrada.`);
     }
 
-    return this.orderRepository.save(order);
+    return orderRepository.save(order);
   }
 
   async cancelOrder(
@@ -337,12 +390,26 @@ export class OrdersService {
       }
 
       for (const detail of order.details) {
-        if (detail.variant) {
+        const variantSize = await entityManager.findOne(VariantSize, {
+          where: {
+            variantProduct: { id: detail.variant.id },
+            // Necesitarías el size_id aquí si el stock es por talla
+            // y orderDetail no lo guarda directamente.
+            // Si orderDetail.variantSize es una relación, puedes usarlo:
+            // size: { id: detail.variantSize.size.id }
+          },
+        });
+
+        if (variantSize) {
           await entityManager.increment(
-            ProductVariant,
-            { id: detail.variant.id },
+            VariantSize,
+            { id: variantSize.id },
             'stock',
             detail.total_amount_of_products,
+          );
+        } else {
+          this.logger.warn(
+            `No se encontró VariantSize para la variante ${detail.variant.id} al intentar restituir stock.`,
           );
         }
       }

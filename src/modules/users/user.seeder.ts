@@ -7,6 +7,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { Employee } from './entities/employee.entity';
 import { Role } from '../roles/entities/role.entity';
+import { InjectTenantRepository } from 'src/common/typeorm-tenant-repository/tenant-repository.decorator';
 
 @Injectable()
 export class UserSeeder {
@@ -15,7 +16,7 @@ export class UserSeeder {
   constructor(
     private readonly configService: ConfigService,
     private readonly dataSource: DataSource,
-    @InjectRepository(Role)
+    @InjectTenantRepository(Role)
     private readonly roleRepository: Repository<Role>,
   ) {}
 

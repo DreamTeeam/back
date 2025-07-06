@@ -56,6 +56,7 @@ import { Client } from '../../modules/users/entities/client.entity';
 import { Role } from '../../modules/roles/entities/role.entity';
 import { Customer } from 'src/master_data/customer/entities/customer.entity';
 
+
 @Injectable()
 export class TenantConnectionService implements OnModuleDestroy {
   private readonly logger = new Logger(TenantConnectionService.name);

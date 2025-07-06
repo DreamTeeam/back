@@ -12,6 +12,7 @@ import { Role } from '../roles/entities/role.entity';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { GoogleClientStrategy } from './strategies/google-client.strategy';
+import { TenantTypeOrmModule } from 'src/common/typeorm-tenant-repository/tenant-repository.provider';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { GoogleClientStrategy } from './strategies/google-client.strategy';
         },
       }),
     }),
-    TypeOrmModule.forFeature([User, Employee, Client, Role]),
+    TenantTypeOrmModule.forFeature([User, Employee, Client, Role]),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, GoogleStrategy, GoogleClientStrategy],
